@@ -14,19 +14,69 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent" />
 
-    <Button
+    <ImageView
+        android:id="@+id/empty"
+        android:visibility="gone"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:src="@mipmap/ic_launcher" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="260dp"
         android:layout_alignParentBottom="true"
-        android:onClick="addHeadView"
-        android:text="addHeaderView"/>
+        android:orientation="vertical">
+
+        <Button
+            android:layout_width="wrap_content"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:onClick="addHeadView"
+            android:text="增加头view" />
+
+        <Button
+            android:layout_width="wrap_content"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:onClick="addFooterView"
+            android:text="增加尾view" />
+
+        <Button
+            android:layout_width="wrap_content"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:onClick="showEmpty"
+            android:text="清空adapter数据" />
+
+        <Button
+            android:layout_width="wrap_content"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:onClick="addData"
+            android:text="增加adapter的数据" />
+
+        <Button
+            android:layout_width="wrap_content"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:onClick="linearlayoutmanager"
+            android:text="设置linearlayoutmanager" />
+
+        <Button
+            android:layout_width="wrap_content"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+
+            android:onClick="gridlayoutmanager"
+            android:text="设置gridlayoutmanager" />
+        <Button
+            android:layout_width="wrap_content"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:onClick="staggeredgridlayoutmanager"
+            android:text="设置staggeredgridlayoutmanager" />
+
+    </LinearLayout>
 
 
-    <Button
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignParentBottom="true"
-        android:layout_alignParentRight="true"
-        android:onClick="addFooterView"
-        android:text="addFooterView"/>
 </RelativeLayout>

@@ -5,16 +5,12 @@ import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.StaggeredGridLayoutManager;
 import android.util.Log;
-import android.util.SparseArray;
 import android.view.View;
 import android.view.ViewGroup;
 
-import com.rrtoyewx.recyclerviewlibrary.RrtoyewxRecyclerView;
 import com.rrtoyewx.recyclerviewlibrary.viewholder.SimpleViewHolder;
 
 import java.util.ArrayList;
-import java.util.Deque;
-import java.util.LinkedList;
 import java.util.List;
 
 /**
@@ -40,10 +36,9 @@ public class WrapperAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
 
     }
 
-
     @Override
     public int getItemViewType(int position) {
-        Log.e("TAG", "getItemViewType" + position);
+        //  Log.e("TAG", "getItemViewType" + position);
 
         if (isHeader(position)) {
             return HEADER_TYPE + position;
@@ -72,7 +67,7 @@ public class WrapperAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
     @Override
     public void onBindViewHolder(RecyclerView.ViewHolder holder, int position) {
         if (!(isHeader(position) && isFooter(position))) {
-            adapter.onBindViewHolder(holder, calculateAdapterPosition(position));
+            adapter.onBindViewHolder(holder, calculateInnerAdapterPosition(position));
         }
     }
 
@@ -98,23 +93,18 @@ public class WrapperAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
         headerViewList.clear();
     }
 
-    @Override
-    public void onAttachedToRecyclerView(RecyclerView recyclerView) {
-        RecyclerView.LayoutManager layoutManager = recyclerView.getLayoutManager();
-        if (layoutManager != null) {
-            if (layoutManager instanceof GridLayoutManager) {
-                GridLayoutManager gridLayoutManager = (GridLayoutManager) layoutManager;
-                final int spanCount = gridLayoutManager.getSpanCount();
-                gridLayoutManager.setSpanSizeLookup(new GridLayoutManager.SpanSizeLookup() {
-                    @Override
-                    public int getSpanSize(int position) {
-                        return isHeader(position) || isFooter(position)
-                                ? spanCount : 1;
-                    }
-                });
-            }
+    public void removeHeaderView(View headerView) {
+        if (headerViewList.contains(headerView)) {
+            headerViewList.remove(headerView);
+            notifyDataSetChanged();
         }
-        super.onAttachedToRecyclerView(recyclerView);
+    }
+
+    public void removeFooterView(View footerView) {
+        if (footerViewList.contains(footerView)) {
+            footerViewList.remove(footerView);
+            notifyDataSetChanged();
+        }
     }
 
     @Override
@@ -135,16 +125,20 @@ public class WrapperAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
     }
 
     @CheckResult
-    private boolean isHeader(int position) {
+    public boolean isHeader(int position) {
         return position < headerViewList.size();
     }
 
     @CheckResult
-    private boolean isFooter(int position) {
+    public boolean isFooter(int position) {
         return adapter != null && (position >= headerViewList.size() + adapter.getItemCount());
     }
 
-    private int calculateAdapterPosition(int position) {
+    private int calculateInnerAdapterPosition(int position) {
         return adapter == null ? -1 : position - headerViewList.size();
+    }
+
+    public int getInnerAdapterCount() {
+        return adapter == null ? 0 : adapter.getItemCount();
     }
 }

@@ -13,10 +13,12 @@ import com.rrtoyewx.recyclerviewlibrary.viewholder.SimpleViewHolder;
  */
 public class Adapter extends RecyclerView.Adapter {
     private Context context;
+    private int itemCount = 0;
 
     public Adapter(Context context) {
         this.context = context;
     }
+
 
     @Override
     public RecyclerView.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
@@ -31,9 +33,14 @@ public class Adapter extends RecyclerView.Adapter {
 
     @Override
     public int getItemCount() {
-        return 20;
+        return itemCount;
     }
 
+
+    public void setItemCount(int itemCount){
+        this.itemCount = itemCount;
+        notifyDataSetChanged();
+    }
 
     public static class Holder extends RecyclerView.ViewHolder {
 
