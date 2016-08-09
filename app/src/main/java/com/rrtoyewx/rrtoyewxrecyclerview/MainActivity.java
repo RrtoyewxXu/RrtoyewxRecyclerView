@@ -29,8 +29,8 @@ public class MainActivity extends AppCompatActivity {
         adapter = new Adapter(this);
 
         recyclerView = (RrtoyewxRecyclerView) findViewById(R.id.recyclerview);
-        linearLayoutManager = new LinearLayoutManager(this);
-        gridLayoutManager = new GridLayoutManager(this, 3);
+        linearLayoutManager = new LinearLayoutManager(this,LinearLayoutManager.VERTICAL,false);
+        gridLayoutManager = new GridLayoutManager(this, 3,LinearLayoutManager.VERTICAL,false);
         staggeredGridLayoutManager = new StaggeredGridLayoutManager(3, StaggeredGridLayoutManager.VERTICAL);
         recyclerView.setLayoutManager(linearLayoutManager);
         recyclerView.setAdapter(adapter);

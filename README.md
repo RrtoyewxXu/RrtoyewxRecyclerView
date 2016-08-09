@@ -20,11 +20,20 @@
     recyclerView.addFooter(View footerView);
 
 ```
+
+
+效果图：
+![images/addHeaderView_addFooterView.gif](addHeaderView和addFooterView)
+---
 2. 能够setEmpty()
 ```
     recyclerView.setEmpty(View emptyView);
 
 ```
+效果图：
+
+![images/set_empty_view.gif](能够setEmpty)
+---
 3. 能够显示加载更多
 ```
     //设置自定义的loadMoreView,可以不设置
@@ -39,4 +48,7 @@
    //增加加载更多的监听，主要是在回调方法去请求数据等操作，
    addRefreshListener(RefreshListener listener);
 ```
+效果图：
+![images/load_more.gif](显示加载更多)
+---
   
