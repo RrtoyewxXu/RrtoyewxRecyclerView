@@ -9,6 +9,7 @@ import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.StaggeredGridLayoutManager;
 import android.util.AttributeSet;
 import android.util.Log;
+import android.view.MotionEvent;
 import android.view.View;
 
 import com.rrtoyewx.recyclerviewlibrary.adapter.NoItemAdapter;
@@ -21,7 +22,7 @@ import com.rrtoyewx.recyclerviewlibrary.adapter.WrapperAdapter;
  */
 public class RrtoyewxRecyclerView extends RecyclerView {
     private static final String TAG = RrtoyewxRecyclerView.class.getSimpleName();
-
+    private static final int DEFAULT_SCROLL_DISTANCE = 50;
     View pullRefreshView;
 
     View loadMoreView;
@@ -34,12 +35,12 @@ public class RrtoyewxRecyclerView extends RecyclerView {
 
     int overScrollMode;
 
-    OnScrollListener onScrollListener;
-    OnScrollListener superScrollListener;
+    int downMotionEventX;
+    int downMotionEventY;
+    int curMotionEventX;
+    int curMotionEventY;
     RefreshListener refreshListener;
 
-    boolean isDownScroll;
-    boolean isUpScroll;
 
     public interface RefreshListener {
         void onLoadMore();
@@ -64,36 +65,6 @@ public class RrtoyewxRecyclerView extends RecyclerView {
 
         wrapperAdapter = new WrapperAdapter(context);
         setAdapter(new NoItemAdapter(context));
-
-
-        superScrollListener = new OnScrollListener() {
-            @Override
-            public void onScrollStateChanged(RecyclerView recyclerView, int newState) {
-                if (newState == SCROLL_STATE_DRAGGING) {
-
-                    LayoutManager layoutManager = getLayoutManager();
-                    WrapperAdapter adapter = (WrapperAdapter) getAdapter();
-                    if (adapter != null && layoutManager != null) {
-                        int lastVisiblePosition = calculateLastVisiblePosition(layoutManager);
-                        if (lastVisiblePosition != -1
-                                && adapter.getInnerAdapterCount() != 0
-                                && (lastVisiblePosition == adapter.getItemCount() - 1)
-                                && !checkIsLoadMore()) {
-
-                            showLoadMoreView();
-                        }
-                    }
-
-                }
-                super.onScrollStateChanged(recyclerView, newState);
-            }
-
-            @Override
-            public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
-                Log.e(TAG, "dx" + dx + "dy" + dy);
-                super.onScrolled(recyclerView, dx, dy);
-            }
-        };
     }
 
     @Override
@@ -160,11 +131,6 @@ public class RrtoyewxRecyclerView extends RecyclerView {
      * @param loadMoreEnable
      */
     public void setLoadMoreEnable(boolean loadMoreEnable) {
-        if (loadMoreEnable) {
-            super.addOnScrollListener(superScrollListener);
-        } else {
-            super.removeOnScrollListener(superScrollListener);
-        }
         this.loadMoreEnable = loadMoreEnable;
     }
 
@@ -184,7 +150,6 @@ public class RrtoyewxRecyclerView extends RecyclerView {
         if (refreshListener != null) {
             refreshListener.onLoadMore();
         }
-
     }
 
     public void completeLoadMore() {
@@ -230,9 +195,44 @@ public class RrtoyewxRecyclerView extends RecyclerView {
     }
 
     @Override
-    public void addOnScrollListener(OnScrollListener onScrollListener) {
-        this.onScrollListener = onScrollListener;
-        super.addOnScrollListener(onScrollListener);
+    public boolean onTouchEvent(MotionEvent e) {
+
+        switch (e.getAction() & MotionEvent.ACTION_MASK) {
+            case MotionEvent.ACTION_DOWN:
+                downMotionEventX = (int) e.getRawX();
+                downMotionEventY = (int) e.getRawY();
+                break;
+            case MotionEvent.ACTION_MOVE:
+                curMotionEventX = (int) e.getRawX();
+                curMotionEventY = (int) e.getRawY();
+                if (downMotionEventY - curMotionEventY >= DEFAULT_SCROLL_DISTANCE) {
+                    checkIfShowLoadMoreInner();
+                }
+
+                break;
+            case MotionEvent.ACTION_UP:
+            case MotionEvent.ACTION_CANCEL:
+
+                break;
+        }
+        return super.onTouchEvent(e);
+    }
+
+    private void checkIfShowLoadMoreInner() {
+        LayoutManager layoutManager = getLayoutManager();
+        WrapperAdapter adapter = (WrapperAdapter) getAdapter();
+        if (adapter != null && layoutManager != null) {
+
+            int lastVisiblePosition = calculateLastVisiblePosition(layoutManager);
+
+            if (lastVisiblePosition != -1
+                    && adapter.getInnerAdapterCount() != 0
+                    && (lastVisiblePosition == adapter.getItemCount() - 1)
+                    && !checkIsLoadMore()) {
+
+                showLoadMoreView();
+            }
+        }
     }
 
     @Override

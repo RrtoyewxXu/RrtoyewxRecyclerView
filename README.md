@@ -9,6 +9,8 @@
     - 修复在设置完LayoutManager后改变LayoutManager，headerView和footerView不占一行的bug;
 3. 2016.8.9 18:00
     - 完成加载更多功能
+4. 2016.8.9 18:45
+    - 修复当页面数据较少的时候，下拉也会出先加载更多view的bug;
 
 ----
 # 目前支持的功能
