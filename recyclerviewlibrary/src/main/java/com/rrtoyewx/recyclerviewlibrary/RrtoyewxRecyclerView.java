@@ -1,25 +1,31 @@
 package com.rrtoyewx.recyclerviewlibrary;
 
 import android.content.Context;
+import android.support.annotation.CheckResult;
 import android.support.annotation.Nullable;
 import android.support.v7.widget.GridLayoutManager;
+import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.StaggeredGridLayoutManager;
 import android.util.AttributeSet;
 import android.util.Log;
-import android.util.SparseArray;
 import android.view.View;
-import android.widget.ListView;
 
 import com.rrtoyewx.recyclerviewlibrary.adapter.NoItemAdapter;
 import com.rrtoyewx.recyclerviewlibrary.adapter.WrapperAdapter;
 
+
 /**
  * Created by Rrtoyewx on 16/8/3.
+ * 封装recyclerView
  */
 public class RrtoyewxRecyclerView extends RecyclerView {
+    private static final String TAG = RrtoyewxRecyclerView.class.getSimpleName();
+
     View pullRefreshView;
+
     View loadMoreView;
+    boolean loadMoreEnable;
 
     View emptyView;
 
@@ -28,9 +34,15 @@ public class RrtoyewxRecyclerView extends RecyclerView {
 
     int overScrollMode;
 
-    {
-        wrapperAdapter = new WrapperAdapter();
-        dataObserver = new DataObserver();
+    OnScrollListener onScrollListener;
+    OnScrollListener superScrollListener;
+    RefreshListener refreshListener;
+
+    boolean isDownScroll;
+    boolean isUpScroll;
+
+    public interface RefreshListener {
+        void onLoadMore();
     }
 
     public RrtoyewxRecyclerView(Context context) {
@@ -47,8 +59,41 @@ public class RrtoyewxRecyclerView extends RecyclerView {
     }
 
     private void init(Context context) {
+        dataObserver = new DataObserver();
+        overScrollMode = getOverScrollMode();
+
+        wrapperAdapter = new WrapperAdapter(context);
         setAdapter(new NoItemAdapter(context));
-        this.overScrollMode = getOverScrollMode();
+
+
+        superScrollListener = new OnScrollListener() {
+            @Override
+            public void onScrollStateChanged(RecyclerView recyclerView, int newState) {
+                if (newState == SCROLL_STATE_DRAGGING) {
+
+                    LayoutManager layoutManager = getLayoutManager();
+                    WrapperAdapter adapter = (WrapperAdapter) getAdapter();
+                    if (adapter != null && layoutManager != null) {
+                        int lastVisiblePosition = calculateLastVisiblePosition(layoutManager);
+                        if (lastVisiblePosition != -1
+                                && adapter.getInnerAdapterCount() != 0
+                                && (lastVisiblePosition == adapter.getItemCount() - 1)
+                                && !checkIsLoadMore()) {
+
+                            showLoadMoreView();
+                        }
+                    }
+
+                }
+                super.onScrollStateChanged(recyclerView, newState);
+            }
+
+            @Override
+            public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
+                Log.e(TAG, "dx" + dx + "dy" + dy);
+                super.onScrolled(recyclerView, dx, dy);
+            }
+        };
     }
 
     @Override
@@ -60,28 +105,134 @@ public class RrtoyewxRecyclerView extends RecyclerView {
         dataObserver.onChanged();
     }
 
+    /**
+     * setEmptyView
+     *
+     * @param emptyView
+     */
     public void setEmptyView(View emptyView) {
         this.emptyView = emptyView;
 
         dataObserver.onChanged();
     }
 
+    /**
+     * addHeaderView
+     *
+     * @param headerView
+     */
     public void addHeaderView(View headerView) {
         wrapperAdapter.addHeaderView(headerView);
         smoothScrollToPosition(0);
     }
 
+    /**
+     * addFooterView
+     *
+     * @param footerView
+     */
     public void addFooterView(View footerView) {
         wrapperAdapter.addFooterView(footerView);
         smoothScrollToPosition(wrapperAdapter.getItemCount() - 1);
     }
 
+    /**
+     * remove headerView
+     *
+     * @param headerView
+     */
     public void removeHeaderView(View headerView) {
         wrapperAdapter.removeHeaderView(headerView);
     }
 
+    /**
+     * remove footerView
+     *
+     * @param footerView
+     */
     public void removeFooterView(View footerView) {
         wrapperAdapter.removeFooterView(footerView);
+    }
+
+    /**
+     * setLoadMoreEnable
+     *
+     * @param loadMoreEnable
+     */
+    public void setLoadMoreEnable(boolean loadMoreEnable) {
+        if (loadMoreEnable) {
+            super.addOnScrollListener(superScrollListener);
+        } else {
+            super.removeOnScrollListener(superScrollListener);
+        }
+        this.loadMoreEnable = loadMoreEnable;
+    }
+
+    /**
+     * setLoadMoreView
+     *
+     * @param loadMoreView
+     */
+    public void setLoadMoreView(View loadMoreView) {
+        this.loadMoreView = loadMoreView;
+        wrapperAdapter.setLoadMoreView(loadMoreView);
+    }
+
+    public void showLoadMoreView() {
+        wrapperAdapter.showLoadMoreView();
+
+        if (refreshListener != null) {
+            refreshListener.onLoadMore();
+        }
+
+    }
+
+    public void completeLoadMore() {
+        wrapperAdapter.hideLoadMoreView();
+    }
+
+    public boolean checkIsLoadMore() {
+        return wrapperAdapter.isLoadMore();
+    }
+
+    public void addRefreshListener(RefreshListener refreshListener) {
+        this.refreshListener = refreshListener;
+    }
+
+    public void removeRefreshListener(RefreshListener listener) {
+        if (this.refreshListener == listener) {
+            this.refreshListener = null;
+        }
+    }
+
+    @CheckResult
+    private int calculateLastVisiblePosition(LayoutManager layoutManager) {
+
+        if (layoutManager instanceof LinearLayoutManager) {
+            LinearLayoutManager linearLayoutManager = (LinearLayoutManager) layoutManager;
+            return linearLayoutManager.findLastVisibleItemPosition();
+        }
+
+        if (layoutManager instanceof StaggeredGridLayoutManager) {
+            StaggeredGridLayoutManager staggeredGridLayoutManager = (StaggeredGridLayoutManager) layoutManager;
+
+            int[] lastVisibleItemPositions = staggeredGridLayoutManager.findLastVisibleItemPositions(null);
+            int max = -1;
+            for (int i = 0; i < lastVisibleItemPositions.length; i++) {
+                max = Math.max(max, lastVisibleItemPositions[i]);
+                Log.e(TAG, "lastVisibleItemPositions" + i + lastVisibleItemPositions[i]);
+            }
+
+            return max;
+        }
+
+        return -1;
+    }
+
+    @Override
+    public void addOnScrollListener(OnScrollListener onScrollListener) {
+        this.onScrollListener = onScrollListener;
+        super.addOnScrollListener(onScrollListener);
     }
 
     @Override
@@ -101,7 +252,9 @@ public class RrtoyewxRecyclerView extends RecyclerView {
                 gridLayoutManager.setSpanSizeLookup(new GridLayoutManager.SpanSizeLookup() {
                     @Override
                     public int getSpanSize(int position) {
-                        return (wrapperAdapter.isHeader(position) || wrapperAdapter.isFooter(position))
+                        return (wrapperAdapter.isHeader(position)
+                                || wrapperAdapter.isFooter(position)
+                                || wrapperAdapter.isLoadMoreView(position))
                                 ? spanCount : 1;
                     }
                 });

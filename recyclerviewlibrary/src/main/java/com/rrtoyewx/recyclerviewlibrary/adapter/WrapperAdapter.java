@@ -1,13 +1,13 @@
 package com.rrtoyewx.recyclerviewlibrary.adapter;
 
+import android.content.Context;
 import android.support.annotation.CheckResult;
-import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.StaggeredGridLayoutManager;
-import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 
+import com.rrtoyewx.recyclerviewlibrary.R;
 import com.rrtoyewx.recyclerviewlibrary.viewholder.SimpleViewHolder;
 
 import java.util.ArrayList;
@@ -18,13 +18,19 @@ import java.util.List;
  * 能够addHeaderView和addFooterView
  */
 public class WrapperAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
+    public static final int LOAD_MORE_VIEW_FOOTER_TYPE = -2;
+
     public static final int HEADER_TYPE = 2000;
     public static final int FOOTER_TYPE = 4000;
 
+    private Context context;
     private RecyclerView.Adapter<RecyclerView.ViewHolder> adapter;
 
     private List<View> headerViewList;
     private List<View> footerViewList;
+
+    private View loadMoreView;
+    private boolean showLoadMoreViewFlag;
 
 
     {
@@ -32,8 +38,8 @@ public class WrapperAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
         footerViewList = new ArrayList<>();
     }
 
-    public WrapperAdapter() {
-
+    public WrapperAdapter(Context context) {
+        this.context = context;
     }
 
     @Override
@@ -48,11 +54,23 @@ public class WrapperAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
             return FOOTER_TYPE + position - headerViewList.size() - adapter.getItemCount();
         }
 
+        if (isLoadMoreView(position)) {
+            return LOAD_MORE_VIEW_FOOTER_TYPE;
+        }
+
         return adapter.getItemViewType(position - headerViewList.size());
     }
 
     @Override
     public RecyclerView.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+        if (viewType == LOAD_MORE_VIEW_FOOTER_TYPE) {
+            if (loadMoreView != null) {
+                return new SimpleViewHolder(loadMoreView);
+            } else {
+                return new SimpleViewHolder(context, parent, R.layout.default_item_load_more_view);
+            }
+        }
+
         if (viewType >= FOOTER_TYPE) {
             return new SimpleViewHolder(footerViewList.get(viewType - FOOTER_TYPE));
         }
@@ -73,7 +91,7 @@ public class WrapperAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
 
     @Override
     public int getItemCount() {
-        return footerViewList.size() + headerViewList.size() + adapter.getItemCount();
+        return footerViewList.size() + headerViewList.size() + adapter.getItemCount() + (showLoadMoreViewFlag ? 1 : 0);
     }
 
     public void addHeaderView(View headerView) {
@@ -107,6 +125,24 @@ public class WrapperAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
         }
     }
 
+    public void setLoadMoreView(View loadMoreView) {
+        this.loadMoreView = loadMoreView;
+    }
+
+    public void showLoadMoreView() {
+        showLoadMoreViewFlag = true;
+        notifyDataSetChanged();
+    }
+
+    public void hideLoadMoreView() {
+        showLoadMoreViewFlag = false;
+        notifyDataSetChanged();
+    }
+
+    public boolean isLoadMore() {
+        return showLoadMoreViewFlag;
+    }
+
     @Override
     public void onViewAttachedToWindow(RecyclerView.ViewHolder holder) {
         int layoutPosition = holder.getLayoutPosition();
@@ -117,8 +153,7 @@ public class WrapperAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
                     && layoutParams instanceof StaggeredGridLayoutManager.LayoutParams) {
 
                 StaggeredGridLayoutManager.LayoutParams params = (StaggeredGridLayoutManager.LayoutParams) layoutParams;
-                params.setFullSpan(isHeader(layoutPosition) || isFooter(layoutPosition));
-
+                params.setFullSpan(isHeader(layoutPosition) || isFooter(layoutPosition) || isLoadMoreView(layoutPosition));
             }
         }
         super.onViewAttachedToWindow(holder);
@@ -131,7 +166,12 @@ public class WrapperAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
 
     @CheckResult
     public boolean isFooter(int position) {
-        return adapter != null && (position >= headerViewList.size() + adapter.getItemCount());
+        return adapter != null && ((position >= headerViewList.size() + adapter.getItemCount()) && !isLoadMoreView(position));
+    }
+
+    @CheckResult
+    public boolean isLoadMoreView(int position) {
+        return showLoadMoreViewFlag && position == getItemCount() - 1;
     }
 
     private int calculateInnerAdapterPosition(int position) {

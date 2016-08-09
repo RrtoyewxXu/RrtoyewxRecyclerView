@@ -7,8 +7,8 @@ import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.StaggeredGridLayoutManager;
 import android.view.LayoutInflater;
 import android.view.View;
-import android.widget.LinearLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.rrtoyewx.recyclerviewlibrary.RrtoyewxRecyclerView;
 
@@ -35,6 +35,26 @@ public class MainActivity extends AppCompatActivity {
         recyclerView.setLayoutManager(linearLayoutManager);
         recyclerView.setAdapter(adapter);
         recyclerView.setEmptyView(findViewById(R.id.empty));
+        recyclerView.setLoadMoreEnable(true);
+
+        recyclerView.addRefreshListener(new RrtoyewxRecyclerView.RefreshListener() {
+            @Override
+            public void onLoadMore() {
+                new Thread() {
+                    @Override
+                    public void run() {
+                        recyclerView.postDelayed(new Runnable() {
+                            @Override
+                            public void run() {
+                                recyclerView.completeLoadMore();
+                                Toast.makeText(MainActivity.this, "加载成功", Toast.LENGTH_SHORT).show();
+                            }
+                        }, 2000);
+                        super.run();
+                    }
+                }.start();
+            }
+        });
     }
 
     public void addHeadView(View view) {
