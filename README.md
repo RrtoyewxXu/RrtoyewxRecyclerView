@@ -16,24 +16,26 @@
 # 目前支持的功能
 1. 能够addHeaderView和addFooterView
 ```
+
     recyclerView.addHeader(View headerView);
     recyclerView.addFooter(View footerView);
-
 ```
 
 
 效果图：
-![images/addHeaderView_addFooterView.gif](addHeaderView和addFooterView)
+![addHeaderView和addFooterView](images/addHeaderView_addFooterView.gif)
+
 ---
 2. 能够setEmpty()
 ```
-    recyclerView.setEmpty(View emptyView);
 
+    recyclerView.setEmpty(View emptyView);
 ```
+
 效果图：
 
-![images/set_empty_view.gif](能够setEmpty)
----
+![setEmpty(View emptyView)](images/set_empty_view.gif])
+-----------------------------------------
 3. 能够显示加载更多
 ```
     //设置自定义的loadMoreView,可以不设置
@@ -49,6 +51,6 @@
    addRefreshListener(RefreshListener listener);
 ```
 效果图：
-![images/load_more.gif](显示加载更多)
+![加载更多](images/load_more.gif)
 ---
   
