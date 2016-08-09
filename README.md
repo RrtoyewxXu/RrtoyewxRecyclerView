@@ -34,8 +34,8 @@
 
 效果图：
 
-![setEmpty(View emptyView)](images/set_empty_view.gif])
------------------------------------------
+![setEmpty(View emptyView)](images/set_empty_view.gif)
+------------------------------------------------------
 3. 能够显示加载更多
 ```
     //设置自定义的loadMoreView,可以不设置
