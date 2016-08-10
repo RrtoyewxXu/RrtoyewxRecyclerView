@@ -34,8 +34,9 @@ public class MainActivity extends AppCompatActivity {
         staggeredGridLayoutManager = new StaggeredGridLayoutManager(3, StaggeredGridLayoutManager.VERTICAL);
         recyclerView.setLayoutManager(linearLayoutManager);
         recyclerView.setAdapter(adapter);
-        recyclerView.setEmptyView(findViewById(R.id.empty));
+        //recyclerView.setEmptyView(findViewById(R.id.empty));
         recyclerView.setLoadMoreEnable(true);
+        recyclerView.setRefreshEnable(true);
 
         recyclerView.addRefreshListener(new RrtoyewxRecyclerView.RefreshListener() {
             @Override

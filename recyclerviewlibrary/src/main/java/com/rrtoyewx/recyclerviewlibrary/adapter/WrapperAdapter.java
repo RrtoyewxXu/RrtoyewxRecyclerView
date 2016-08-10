@@ -4,10 +4,13 @@ import android.content.Context;
 import android.support.annotation.CheckResult;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.StaggeredGridLayoutManager;
+import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 
 import com.rrtoyewx.recyclerviewlibrary.R;
+import com.rrtoyewx.recyclerviewlibrary.refreshheader.ArrowRefreshHeader;
+import com.rrtoyewx.recyclerviewlibrary.refreshheader.BaseRefreshHeader;
 import com.rrtoyewx.recyclerviewlibrary.viewholder.SimpleViewHolder;
 
 import java.util.ArrayList;
@@ -18,7 +21,8 @@ import java.util.List;
  * 能够addHeaderView和addFooterView
  */
 public class WrapperAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
-    public static final int LOAD_MORE_VIEW_FOOTER_TYPE = -2;
+    public static final int LOAD_MORE_FOOTER_TYPE = -2;
+    public static final int PULL_REFRESH_HEADER_TYPE = -1;
 
     public static final int HEADER_TYPE = 2000;
     public static final int FOOTER_TYPE = 4000;
@@ -31,6 +35,9 @@ public class WrapperAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
 
     private View loadMoreView;
     private boolean showLoadMoreViewFlag;
+
+    private BaseRefreshHeader refreshHeader;
+    private boolean showPullRefreshFlag;
 
 
     {
@@ -45,17 +52,24 @@ public class WrapperAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
     @Override
     public int getItemViewType(int position) {
         //  Log.e("TAG", "getItemViewType" + position);
+        if (isPullRefreshView(position)) {
+            return PULL_REFRESH_HEADER_TYPE;
+        }
 
         if (isHeader(position)) {
-            return HEADER_TYPE + position;
+            return HEADER_TYPE + position
+                    - (showPullRefreshFlag ? 1 : 0);
         }
 
         if (isFooter(position)) {
-            return FOOTER_TYPE + position - headerViewList.size() - adapter.getItemCount();
+            return FOOTER_TYPE + position
+                    - headerViewList.size()
+                    - adapter.getItemCount()
+                    - (showPullRefreshFlag ? 1 : 0);
         }
 
         if (isLoadMoreView(position)) {
-            return LOAD_MORE_VIEW_FOOTER_TYPE;
+            return LOAD_MORE_FOOTER_TYPE;
         }
 
         return adapter.getItemViewType(position - headerViewList.size());
@@ -63,19 +77,34 @@ public class WrapperAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
 
     @Override
     public RecyclerView.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-        if (viewType == LOAD_MORE_VIEW_FOOTER_TYPE) {
+        if (viewType == PULL_REFRESH_HEADER_TYPE) {
+            Log.e("TAG","PULL_REFRESH_HEADER_TYPE");
+            if (refreshHeader == null || refreshHeader.getHeaderView() == null) {
+                refreshHeader = new ArrowRefreshHeader(context);
+            }
+
+            return new SimpleViewHolder(refreshHeader.getHeaderView());
+        }
+
+        if (viewType == LOAD_MORE_FOOTER_TYPE) {
+            Log.e("TAG","LOAD_MORE_FOOTER_TYPE");
+
             if (loadMoreView != null) {
                 return new SimpleViewHolder(loadMoreView);
             } else {
-                return new SimpleViewHolder(context, parent, R.layout.default_item_load_more_view);
+                return new SimpleViewHolder(context, parent, R.layout.default_load_more_footer);
             }
         }
 
         if (viewType >= FOOTER_TYPE) {
+            Log.e("TAG","FOOTER_TYPE");
+
             return new SimpleViewHolder(footerViewList.get(viewType - FOOTER_TYPE));
         }
 
         if (viewType >= HEADER_TYPE) {
+            Log.e("TAG","HEADER_TYPE");
+
             return new SimpleViewHolder(headerViewList.get(viewType - HEADER_TYPE));
         }
 
@@ -91,7 +120,11 @@ public class WrapperAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
 
     @Override
     public int getItemCount() {
-        return footerViewList.size() + headerViewList.size() + adapter.getItemCount() + (showLoadMoreViewFlag ? 1 : 0);
+        return footerViewList.size()
+                + headerViewList.size()
+                + adapter.getItemCount()
+                + (showLoadMoreViewFlag ? 1 : 0)
+                + (showPullRefreshFlag ? 1 : 0);
     }
 
     public void addHeaderView(View headerView) {
@@ -143,6 +176,15 @@ public class WrapperAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
         return showLoadMoreViewFlag;
     }
 
+    public void setShowPullRefreshFlag(boolean showPullRefreshFlag) {
+        boolean needNotify = !(this.showPullRefreshFlag == showPullRefreshFlag);
+        this.showPullRefreshFlag = showPullRefreshFlag;
+
+        if (needNotify) {
+            notifyDataSetChanged();
+        }
+    }
+
     @Override
     public void onViewAttachedToWindow(RecyclerView.ViewHolder holder) {
         int layoutPosition = holder.getLayoutPosition();
@@ -161,17 +203,22 @@ public class WrapperAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
 
     @CheckResult
     public boolean isHeader(int position) {
-        return position < headerViewList.size();
+        return position < headerViewList.size() && !isPullRefreshView(position);
     }
 
     @CheckResult
     public boolean isFooter(int position) {
-        return adapter != null && ((position >= headerViewList.size() + adapter.getItemCount()) && !isLoadMoreView(position));
+        return adapter != null &&
+                ((position >= headerViewList.size() + adapter.getItemCount() + (showPullRefreshFlag ? 1 : 0)) && !isLoadMoreView(position));
     }
 
     @CheckResult
     public boolean isLoadMoreView(int position) {
         return showLoadMoreViewFlag && position == getItemCount() - 1;
+    }
+
+    public boolean isPullRefreshView(int position) {
+        return showPullRefreshFlag && position == 0;
     }
 
     private int calculateInnerAdapterPosition(int position) {

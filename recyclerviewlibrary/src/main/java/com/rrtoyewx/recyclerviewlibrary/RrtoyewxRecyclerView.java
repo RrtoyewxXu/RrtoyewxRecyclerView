@@ -15,6 +15,11 @@ import android.view.View;
 import com.rrtoyewx.recyclerviewlibrary.adapter.NoItemAdapter;
 import com.rrtoyewx.recyclerviewlibrary.adapter.WrapperAdapter;
 
+import static com.rrtoyewx.recyclerviewlibrary.refreshheader.BaseRefreshHeader.*;
+
+import com.rrtoyewx.recyclerviewlibrary.refreshheader.ArrowRefreshHeader;
+import com.rrtoyewx.recyclerviewlibrary.refreshheader.BaseRefreshHeader;
+
 
 /**
  * Created by Rrtoyewx on 16/8/3.
@@ -24,6 +29,9 @@ public class RrtoyewxRecyclerView extends RecyclerView {
     private static final String TAG = RrtoyewxRecyclerView.class.getSimpleName();
     private static final int DEFAULT_SCROLL_DISTANCE = 50;
     View pullRefreshView;
+
+    BaseRefreshHeader refreshHeader;
+    boolean refreshEnable;
 
     View loadMoreView;
     boolean loadMoreEnable;
@@ -35,10 +43,9 @@ public class RrtoyewxRecyclerView extends RecyclerView {
 
     int overScrollMode;
 
-    int downMotionEventX;
     int downMotionEventY;
-    int curMotionEventX;
     int curMotionEventY;
+
     RefreshListener refreshListener;
 
 
@@ -62,6 +69,8 @@ public class RrtoyewxRecyclerView extends RecyclerView {
     private void init(Context context) {
         dataObserver = new DataObserver();
         overScrollMode = getOverScrollMode();
+
+        refreshHeader = new ArrowRefreshHeader(context);
 
         wrapperAdapter = new WrapperAdapter(context);
         setAdapter(new NoItemAdapter(context));
@@ -160,6 +169,11 @@ public class RrtoyewxRecyclerView extends RecyclerView {
         return wrapperAdapter.isLoadMore();
     }
 
+    public void setRefreshEnable(boolean refreshEnable) {
+        this.refreshEnable = refreshEnable;
+        wrapperAdapter.setShowPullRefreshFlag(refreshEnable);
+    }
+
     public void addRefreshListener(RefreshListener refreshListener) {
         this.refreshListener = refreshListener;
     }
@@ -168,6 +182,72 @@ public class RrtoyewxRecyclerView extends RecyclerView {
         if (this.refreshListener == listener) {
             this.refreshListener = null;
         }
+    }
+
+    @Override
+    public boolean onTouchEvent(MotionEvent e) {
+
+        switch (e.getAction() & MotionEvent.ACTION_MASK) {
+            case MotionEvent.ACTION_DOWN:
+                downMotionEventY = (int) e.getRawY();
+                break;
+            case MotionEvent.ACTION_MOVE:
+                curMotionEventY = (int) e.getRawY();
+                if (downMotionEventY - curMotionEventY >= DEFAULT_SCROLL_DISTANCE) {
+                    if (checkCanLoadMore()) {
+                        showLoadMoreView();
+                    }
+                }
+
+                if (checkCanRefresh()) {
+                    Log.e(TAG, "checkCanRefresh()" + checkCanRefresh());
+                    refreshHeader.moveTo(curMotionEventY - downMotionEventY, curMotionEventY, downMotionEventY);
+                }
+
+                break;
+            case MotionEvent.ACTION_UP:
+            case MotionEvent.ACTION_CANCEL:
+
+                break;
+        }
+        return super.onTouchEvent(e);
+    }
+
+    @CheckResult
+    private boolean checkCanRefresh() {
+        LayoutManager layoutManager = getLayoutManager();
+        Adapter adapter = getAdapter();
+        if (adapter != null && layoutManager != null) {
+            int firstVisiblePosition = calculateFirstVisiblePosition(layoutManager);
+            if (firstVisiblePosition != -1
+                    && refreshHeader.getRefreshState() != REFRESH_STATE_REFRESHING
+                    && refreshEnable) {
+
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    @CheckResult
+    private boolean checkCanLoadMore() {
+        LayoutManager layoutManager = getLayoutManager();
+        WrapperAdapter adapter = (WrapperAdapter) getAdapter();
+        if (adapter != null && layoutManager != null) {
+
+            int lastVisiblePosition = calculateLastVisiblePosition(layoutManager);
+
+            if (lastVisiblePosition != -1
+                    && adapter.getInnerAdapterCount() != 0
+                    && (lastVisiblePosition == adapter.getItemCount() - 1)
+                    && !checkIsLoadMore()) {
+
+                return true;
+            }
+        }
+
+        return false;
     }
 
     @CheckResult
@@ -194,45 +274,26 @@ public class RrtoyewxRecyclerView extends RecyclerView {
         return -1;
     }
 
-    @Override
-    public boolean onTouchEvent(MotionEvent e) {
-
-        switch (e.getAction() & MotionEvent.ACTION_MASK) {
-            case MotionEvent.ACTION_DOWN:
-                downMotionEventX = (int) e.getRawX();
-                downMotionEventY = (int) e.getRawY();
-                break;
-            case MotionEvent.ACTION_MOVE:
-                curMotionEventX = (int) e.getRawX();
-                curMotionEventY = (int) e.getRawY();
-                if (downMotionEventY - curMotionEventY >= DEFAULT_SCROLL_DISTANCE) {
-                    checkIfShowLoadMoreInner();
-                }
-
-                break;
-            case MotionEvent.ACTION_UP:
-            case MotionEvent.ACTION_CANCEL:
-
-                break;
+    private int calculateFirstVisiblePosition(LayoutManager layoutManager) {
+        if (layoutManager instanceof LinearLayoutManager) {
+            LinearLayoutManager linearLayoutManager = (LinearLayoutManager) layoutManager;
+            return linearLayoutManager.findFirstVisibleItemPosition();
         }
-        return super.onTouchEvent(e);
-    }
 
-    private void checkIfShowLoadMoreInner() {
-        LayoutManager layoutManager = getLayoutManager();
-        WrapperAdapter adapter = (WrapperAdapter) getAdapter();
-        if (adapter != null && layoutManager != null) {
+        if (layoutManager instanceof StaggeredGridLayoutManager) {
+            StaggeredGridLayoutManager staggeredGridLayoutManager = (StaggeredGridLayoutManager) layoutManager;
+            int[] firstVisibleItemPositions = staggeredGridLayoutManager.findFirstVisibleItemPositions(null);
 
-            int lastVisiblePosition = calculateLastVisiblePosition(layoutManager);
-
-            if (lastVisiblePosition != -1
-                    && adapter.getInnerAdapterCount() != 0
-                    && (lastVisiblePosition == adapter.getItemCount() - 1)
-                    && !checkIsLoadMore()) {
-
-                showLoadMoreView();
+            int min = 10;
+            for (int i = 0; i < firstVisibleItemPositions.length; i++) {
+                min = Math.min(min, firstVisibleItemPositions[i]);
+                Log.e(TAG, "firstVisibleItemPositions" + i + firstVisibleItemPositions[i]);
             }
+
+            return min;
         }
+
+        return -1;
     }
 
     @Override
