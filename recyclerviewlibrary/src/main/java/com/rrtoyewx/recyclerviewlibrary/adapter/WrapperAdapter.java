@@ -21,6 +21,8 @@ import java.util.List;
  * 能够addHeaderView和addFooterView
  */
 public class WrapperAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
+    private static final String TAG = WrapperAdapter.class.getSimpleName();
+
     public static final int LOAD_MORE_FOOTER_TYPE = -2;
     public static final int PULL_REFRESH_HEADER_TYPE = -1;
 
@@ -51,17 +53,22 @@ public class WrapperAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
 
     @Override
     public int getItemViewType(int position) {
-        //  Log.e("TAG", "getItemViewType" + position);
         if (isPullRefreshView(position)) {
+            Log.d(TAG, position + "PullRefreshView");
             return PULL_REFRESH_HEADER_TYPE;
         }
 
         if (isHeader(position)) {
-            return HEADER_TYPE + position
-                    - (showPullRefreshFlag ? 1 : 0);
+            Log.d(TAG, position + "isHeader" + (HEADER_TYPE + position - (showPullRefreshFlag ? 1 : 0)));
+            return HEADER_TYPE + position - (showPullRefreshFlag ? 1 : 0);
         }
 
         if (isFooter(position)) {
+            Log.d(TAG, position + "isFooter" + (FOOTER_TYPE + position
+                    - headerViewList.size()
+                    - adapter.getItemCount()
+                    - (showPullRefreshFlag ? 1 : 0)));
+
             return FOOTER_TYPE + position
                     - headerViewList.size()
                     - adapter.getItemCount()
@@ -69,26 +76,21 @@ public class WrapperAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
         }
 
         if (isLoadMoreView(position)) {
+            Log.d(TAG, position + "isLoadMoreView");
             return LOAD_MORE_FOOTER_TYPE;
         }
 
-        return adapter.getItemViewType(position - headerViewList.size());
+        Log.d(TAG, position + "adapter" + (adapter.getItemViewType(position - headerViewList.size() - (showPullRefreshFlag ? 1 : 0))));
+        return adapter.getItemViewType(position - headerViewList.size() - (showPullRefreshFlag ? 1 : 0));
     }
 
     @Override
     public RecyclerView.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         if (viewType == PULL_REFRESH_HEADER_TYPE) {
-            Log.e("TAG","PULL_REFRESH_HEADER_TYPE");
-            if (refreshHeader == null || refreshHeader.getHeaderView() == null) {
-                refreshHeader = new ArrowRefreshHeader(context);
-            }
-
             return new SimpleViewHolder(refreshHeader.getHeaderView());
         }
 
         if (viewType == LOAD_MORE_FOOTER_TYPE) {
-            Log.e("TAG","LOAD_MORE_FOOTER_TYPE");
-
             if (loadMoreView != null) {
                 return new SimpleViewHolder(loadMoreView);
             } else {
@@ -97,14 +99,10 @@ public class WrapperAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
         }
 
         if (viewType >= FOOTER_TYPE) {
-            Log.e("TAG","FOOTER_TYPE");
-
             return new SimpleViewHolder(footerViewList.get(viewType - FOOTER_TYPE));
         }
 
         if (viewType >= HEADER_TYPE) {
-            Log.e("TAG","HEADER_TYPE");
-
             return new SimpleViewHolder(headerViewList.get(viewType - HEADER_TYPE));
         }
 
@@ -113,7 +111,7 @@ public class WrapperAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
 
     @Override
     public void onBindViewHolder(RecyclerView.ViewHolder holder, int position) {
-        if (!(isHeader(position) && isFooter(position))) {
+        if (!(isHeader(position) || isFooter(position) || isPullRefreshView(position) || isLoadMoreView(position))) {
             adapter.onBindViewHolder(holder, calculateInnerAdapterPosition(position));
         }
     }
@@ -177,8 +175,17 @@ public class WrapperAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
     }
 
     public void setShowPullRefreshFlag(boolean showPullRefreshFlag) {
-        boolean needNotify = !(this.showPullRefreshFlag == showPullRefreshFlag);
+        boolean needNotify = !(this.showPullRefreshFlag == showPullRefreshFlag) && refreshHeader != null;
         this.showPullRefreshFlag = showPullRefreshFlag;
+
+        if (needNotify) {
+            notifyDataSetChanged();
+        }
+    }
+
+    public void setPullRefreshHeader(BaseRefreshHeader refreshHeader) {
+        boolean needNotify = !(this.refreshHeader == refreshHeader) && showPullRefreshFlag;
+        this.refreshHeader = refreshHeader;
 
         if (needNotify) {
             notifyDataSetChanged();
@@ -195,30 +202,32 @@ public class WrapperAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
                     && layoutParams instanceof StaggeredGridLayoutManager.LayoutParams) {
 
                 StaggeredGridLayoutManager.LayoutParams params = (StaggeredGridLayoutManager.LayoutParams) layoutParams;
-                params.setFullSpan(isHeader(layoutPosition) || isFooter(layoutPosition) || isLoadMoreView(layoutPosition));
+                params.setFullSpan(isHeader(layoutPosition) || isFooter(layoutPosition) || isLoadMoreView(layoutPosition) || isPullRefreshView(layoutPosition));
             }
         }
         super.onViewAttachedToWindow(holder);
     }
 
     @CheckResult
+    public boolean isPullRefreshView(int position) {
+        return showPullRefreshFlag && position == 0;
+    }
+
+    @CheckResult
     public boolean isHeader(int position) {
-        return position < headerViewList.size() && !isPullRefreshView(position);
+        return (showPullRefreshFlag ? position - 1 : position) < headerViewList.size() && !isPullRefreshView(position);
     }
 
     @CheckResult
     public boolean isFooter(int position) {
         return adapter != null &&
-                ((position >= headerViewList.size() + adapter.getItemCount() + (showPullRefreshFlag ? 1 : 0)) && !isLoadMoreView(position));
+                ((position >= headerViewList.size() + adapter.getItemCount() + (showPullRefreshFlag ? 1 : 0))
+                        && !isLoadMoreView(position));
     }
 
     @CheckResult
     public boolean isLoadMoreView(int position) {
         return showLoadMoreViewFlag && position == getItemCount() - 1;
-    }
-
-    public boolean isPullRefreshView(int position) {
-        return showPullRefreshFlag && position == 0;
     }
 
     private int calculateInnerAdapterPosition(int position) {

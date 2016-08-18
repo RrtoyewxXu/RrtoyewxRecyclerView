@@ -34,11 +34,28 @@ public class MainActivity extends AppCompatActivity {
         staggeredGridLayoutManager = new StaggeredGridLayoutManager(3, StaggeredGridLayoutManager.VERTICAL);
         recyclerView.setLayoutManager(linearLayoutManager);
         recyclerView.setAdapter(adapter);
-        //recyclerView.setEmptyView(findViewById(R.id.empty));
+        recyclerView.setEmptyView(findViewById(R.id.empty));
         recyclerView.setLoadMoreEnable(true);
         recyclerView.setRefreshEnable(true);
 
-        recyclerView.addRefreshListener(new RrtoyewxRecyclerView.RefreshListener() {
+        recyclerView.addRefreshListener(new RrtoyewxRecyclerView.RefreshDataListener() {
+            @Override
+            public void onRefresh() {
+                new Thread() {
+                    @Override
+                    public void run() {
+                        recyclerView.postDelayed(new Runnable() {
+                            @Override
+                            public void run() {
+                                recyclerView.completeRefresh();
+                                Toast.makeText(MainActivity.this, "下拉加载成功", Toast.LENGTH_SHORT).show();
+                            }
+                        }, 2000);
+                        super.run();
+                    }
+                }.start();
+            }
+
             @Override
             public void onLoadMore() {
                 new Thread() {

@@ -2,28 +2,67 @@ package com.rrtoyewx.recyclerviewlibrary.refreshheader;
 
 import android.view.View;
 
+import com.rrtoyewx.recyclerviewlibrary.RrtoyewxRecyclerView;
+
 /**
  * Created by Rrtoyewx on 16/8/10.
  */
-public interface BaseRefreshHeader {
-    int REFRESH_STATE_IDLE = 0;
-    int REFRESH_STATE_PULL = 1;
-    int REFRESH_STATE_RELEASE = 2;
-    int REFRESH_STATE_REFRESHING = 3;
+public abstract class BaseRefreshHeader {
+    public static final int REFRESH_STATE_IDLE = 0;
+    public static final int REFRESH_STATE_PULL = 1;
+    public static final int REFRESH_STATE_RELEASE = 2;
+    public static final int REFRESH_STATE_REFRESHING = 3;
 
-    void moveTo(int distance, int newY, int oldY);
+    protected int mRefreshState;
 
-    View getHeaderView();
+    protected View mHeaderContainer;
+    protected int mRefreshHeaderHeight;
+    protected int mRefreshHeaderMaxHeight;
 
-    void setHeaderHeight();
+    public final void move(int distance, int newY, int oldY) {
+        if (distance <= mRefreshHeaderMaxHeight) {
+            changeContainerUI(distance, newY, oldY);
+            changeRefreshStates(distance);
+        }
+    }
 
-    void setHeaderMaxHeight();
+    public abstract void changeContainerUI(int distance, int newY, int oldY);
 
-    int getHeaderHeight();
+    public abstract void changeRefreshStates(int distance);
 
-    int getHeaderMaxHeight();
+    public abstract void upOrCancel(RrtoyewxRecyclerView.RefreshDataListener refreshListener);
 
-    void setRefreshState(int refreshState);
+    public abstract void completeRefresh();
 
-    int getRefreshState();
+    public View getHeaderView() {
+        return mHeaderContainer;
+    }
+
+    public void setHeaderHeight(int headerHeight) {
+        this.mRefreshHeaderHeight = headerHeight;
+    }
+
+    public int getHeaderHeight() {
+        return mRefreshHeaderHeight;
+    }
+
+    public void setHeaderMaxHeight(int headerMaxHeight) {
+        this.mRefreshHeaderMaxHeight = headerMaxHeight;
+    }
+
+    public int getHeaderMaxHeight() {
+        return mRefreshHeaderMaxHeight;
+    }
+
+    public void setRefreshState(int refreshState) {
+        this.mRefreshState = refreshState;
+    }
+
+    public int getRefreshState() {
+        return mRefreshState;
+    }
+
+    public int getVisibleHeaderHeight() {
+        return mHeaderContainer.getLayoutParams().height;
+    }
 }

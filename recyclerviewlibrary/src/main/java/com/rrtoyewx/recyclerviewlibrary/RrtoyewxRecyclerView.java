@@ -27,29 +27,30 @@ import com.rrtoyewx.recyclerviewlibrary.refreshheader.BaseRefreshHeader;
  */
 public class RrtoyewxRecyclerView extends RecyclerView {
     private static final String TAG = RrtoyewxRecyclerView.class.getSimpleName();
-    private static final int DEFAULT_SCROLL_DISTANCE = 50;
-    View pullRefreshView;
 
-    BaseRefreshHeader refreshHeader;
-    boolean refreshEnable;
+    private Context mContext;
+    private WrapperAdapter mWrapperAdapter;
 
-    View loadMoreView;
-    boolean loadMoreEnable;
+    private BaseRefreshHeader mRefreshHeader;
+    private boolean mRefreshEnable;
 
-    View emptyView;
+    private View mLoadMoreView;
+    private boolean mLoadMoreEnable;
 
-    WrapperAdapter wrapperAdapter;
-    DataObserver dataObserver;
+    private View mEmptyView;
+    private DataObserver mDataObserver;
 
-    int overScrollMode;
+    private int mOverScrollMode;
 
-    int downMotionEventY;
-    int curMotionEventY;
+    private int mDownMotionEventY;
+    private int mCurMotionEventY;
 
-    RefreshListener refreshListener;
+    private OnScrollListener mOnScrollListener;
+    private RefreshDataListener mRefreshDataListener;
 
+    public interface RefreshDataListener {
+        void onRefresh();
 
-    public interface RefreshListener {
         void onLoadMore();
     }
 
@@ -67,23 +68,41 @@ public class RrtoyewxRecyclerView extends RecyclerView {
     }
 
     private void init(Context context) {
-        dataObserver = new DataObserver();
-        overScrollMode = getOverScrollMode();
+        this.mContext = context;
+        mDataObserver = new DataObserver();
+        mOverScrollMode = getOverScrollMode();
 
-        refreshHeader = new ArrowRefreshHeader(context);
-
-        wrapperAdapter = new WrapperAdapter(context);
+        mWrapperAdapter = new WrapperAdapter(context);
         setAdapter(new NoItemAdapter(context));
+
+        mOnScrollListener = new OnScrollListener() {
+            @Override
+            public void onScrollStateChanged(RecyclerView recyclerView, int newState) {
+                if (newState == SCROLL_STATE_DRAGGING) {
+                    if (checkCanLoadMore()) {
+                        showLoadMoreView();
+                    }
+                }
+                super.onScrollStateChanged(recyclerView, newState);
+            }
+
+            @Override
+            public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
+                super.onScrolled(recyclerView, dx, dy);
+            }
+        };
+
     }
 
     @Override
     public void setAdapter(Adapter adapter) {
-        wrapperAdapter.setAdapter(adapter);
-        super.setAdapter(wrapperAdapter);
-        adapter.registerAdapterDataObserver(dataObserver);
+        mWrapperAdapter.setAdapter(adapter);
+        super.setAdapter(mWrapperAdapter);
+        adapter.registerAdapterDataObserver(mDataObserver);
 
-        dataObserver.onChanged();
+        mDataObserver.onChanged();
     }
+
 
     /**
      * setEmptyView
@@ -91,9 +110,9 @@ public class RrtoyewxRecyclerView extends RecyclerView {
      * @param emptyView
      */
     public void setEmptyView(View emptyView) {
-        this.emptyView = emptyView;
+        this.mEmptyView = emptyView;
 
-        dataObserver.onChanged();
+        mDataObserver.onChanged();
     }
 
     /**
@@ -102,7 +121,7 @@ public class RrtoyewxRecyclerView extends RecyclerView {
      * @param headerView
      */
     public void addHeaderView(View headerView) {
-        wrapperAdapter.addHeaderView(headerView);
+        mWrapperAdapter.addHeaderView(headerView);
         smoothScrollToPosition(0);
     }
 
@@ -112,8 +131,8 @@ public class RrtoyewxRecyclerView extends RecyclerView {
      * @param footerView
      */
     public void addFooterView(View footerView) {
-        wrapperAdapter.addFooterView(footerView);
-        smoothScrollToPosition(wrapperAdapter.getItemCount() - 1);
+        mWrapperAdapter.addFooterView(footerView);
+        smoothScrollToPosition(mWrapperAdapter.getItemCount() - 1);
     }
 
     /**
@@ -122,7 +141,7 @@ public class RrtoyewxRecyclerView extends RecyclerView {
      * @param headerView
      */
     public void removeHeaderView(View headerView) {
-        wrapperAdapter.removeHeaderView(headerView);
+        mWrapperAdapter.removeHeaderView(headerView);
     }
 
     /**
@@ -131,7 +150,7 @@ public class RrtoyewxRecyclerView extends RecyclerView {
      * @param footerView
      */
     public void removeFooterView(View footerView) {
-        wrapperAdapter.removeFooterView(footerView);
+        mWrapperAdapter.removeFooterView(footerView);
     }
 
     /**
@@ -140,7 +159,12 @@ public class RrtoyewxRecyclerView extends RecyclerView {
      * @param loadMoreEnable
      */
     public void setLoadMoreEnable(boolean loadMoreEnable) {
-        this.loadMoreEnable = loadMoreEnable;
+        this.mLoadMoreEnable = loadMoreEnable;
+        if (loadMoreEnable) {
+            addOnScrollListener(mOnScrollListener);
+        } else {
+            removeOnScrollListener(mOnScrollListener);
+        }
     }
 
     /**
@@ -149,38 +173,59 @@ public class RrtoyewxRecyclerView extends RecyclerView {
      * @param loadMoreView
      */
     public void setLoadMoreView(View loadMoreView) {
-        this.loadMoreView = loadMoreView;
-        wrapperAdapter.setLoadMoreView(loadMoreView);
+        this.mLoadMoreView = loadMoreView;
+        mWrapperAdapter.setLoadMoreView(loadMoreView);
     }
 
     public void showLoadMoreView() {
-        wrapperAdapter.showLoadMoreView();
+        mWrapperAdapter.showLoadMoreView();
 
-        if (refreshListener != null) {
-            refreshListener.onLoadMore();
+        if (mRefreshDataListener != null) {
+            mRefreshDataListener.onLoadMore();
         }
     }
 
     public void completeLoadMore() {
-        wrapperAdapter.hideLoadMoreView();
+        mWrapperAdapter.hideLoadMoreView();
     }
 
     public boolean checkIsLoadMore() {
-        return wrapperAdapter.isLoadMore();
+        return mWrapperAdapter.isLoadMore();
     }
 
-    public void setRefreshEnable(boolean refreshEnable) {
-        this.refreshEnable = refreshEnable;
-        wrapperAdapter.setShowPullRefreshFlag(refreshEnable);
+    public void setRefreshEnable(boolean mRefreshEnable) {
+        this.mRefreshEnable = mRefreshEnable;
+        mWrapperAdapter.setShowPullRefreshFlag(mRefreshEnable);
+
+        if (mRefreshEnable) {
+
+            if (mRefreshHeader == null) {
+                mRefreshHeader = new ArrowRefreshHeader(mContext);
+            }
+
+            setRefreshHeader(mRefreshHeader);
+        }
     }
 
-    public void addRefreshListener(RefreshListener refreshListener) {
-        this.refreshListener = refreshListener;
+    public void setRefreshHeader(BaseRefreshHeader header) {
+        mRefreshHeader = header;
+        mWrapperAdapter.setPullRefreshHeader(header);
     }
 
-    public void removeRefreshListener(RefreshListener listener) {
-        if (this.refreshListener == listener) {
-            this.refreshListener = null;
+    public void completeRefresh() {
+        if (mRefreshHeader != null) {
+            mRefreshHeader.completeRefresh();
+        }
+    }
+
+
+    public void addRefreshListener(RefreshDataListener refreshListener) {
+        this.mRefreshDataListener = refreshListener;
+    }
+
+    public void removeRefreshListener(RefreshDataListener listener) {
+        if (this.mRefreshDataListener == listener) {
+            this.mRefreshDataListener = null;
         }
     }
 
@@ -189,27 +234,27 @@ public class RrtoyewxRecyclerView extends RecyclerView {
 
         switch (e.getAction() & MotionEvent.ACTION_MASK) {
             case MotionEvent.ACTION_DOWN:
-                downMotionEventY = (int) e.getRawY();
+                mDownMotionEventY = (int) e.getRawY();
                 break;
+
             case MotionEvent.ACTION_MOVE:
-                curMotionEventY = (int) e.getRawY();
-                if (downMotionEventY - curMotionEventY >= DEFAULT_SCROLL_DISTANCE) {
-                    if (checkCanLoadMore()) {
-                        showLoadMoreView();
-                    }
-                }
+                mCurMotionEventY = (int) e.getRawY();
 
                 if (checkCanRefresh()) {
-                    Log.e(TAG, "checkCanRefresh()" + checkCanRefresh());
-                    refreshHeader.moveTo(curMotionEventY - downMotionEventY, curMotionEventY, downMotionEventY);
+                    Log.d(TAG, "canRefresh");
+                    mRefreshHeader.move((mCurMotionEventY - mDownMotionEventY) / 2, mCurMotionEventY, mDownMotionEventY);
                 }
 
                 break;
+
             case MotionEvent.ACTION_UP:
             case MotionEvent.ACTION_CANCEL:
-
+                if (mRefreshHeader.getRefreshState() != REFRESH_STATE_REFRESHING) {
+                    mRefreshHeader.upOrCancel(mRefreshDataListener);
+                }
                 break;
         }
+
         return super.onTouchEvent(e);
     }
 
@@ -218,10 +263,13 @@ public class RrtoyewxRecyclerView extends RecyclerView {
         LayoutManager layoutManager = getLayoutManager();
         Adapter adapter = getAdapter();
         if (adapter != null && layoutManager != null) {
+
             int firstVisiblePosition = calculateFirstVisiblePosition(layoutManager);
-            if (firstVisiblePosition != -1
-                    && refreshHeader.getRefreshState() != REFRESH_STATE_REFRESHING
-                    && refreshEnable) {
+            Log.d(TAG, "firstVisiblePosition" + firstVisiblePosition);
+            if (mRefreshEnable
+                    && !checkIsLoadMore()
+                    && firstVisiblePosition == (mRefreshHeader.getVisibleHeaderHeight() == 0 ? 1 : 0)
+                    && mRefreshHeader.getRefreshState() != REFRESH_STATE_REFRESHING) {
 
                 return true;
             }
@@ -241,7 +289,8 @@ public class RrtoyewxRecyclerView extends RecyclerView {
             if (lastVisiblePosition != -1
                     && adapter.getInnerAdapterCount() != 0
                     && (lastVisiblePosition == adapter.getItemCount() - 1)
-                    && !checkIsLoadMore()) {
+                    && !checkIsLoadMore()
+                    && mRefreshHeader.getRefreshState() == REFRESH_STATE_IDLE) {
 
                 return true;
             }
@@ -299,13 +348,13 @@ public class RrtoyewxRecyclerView extends RecyclerView {
     @Override
     public void setOverScrollMode(int overScrollMode) {
         super.setOverScrollMode(overScrollMode);
-        this.overScrollMode = overScrollMode;
+        this.mOverScrollMode = overScrollMode;
     }
 
     @Override
     public void setLayoutManager(LayoutManager layoutManager) {
         super.setLayoutManager(layoutManager);
-        if (wrapperAdapter != null) {
+        if (mWrapperAdapter != null) {
 
             if (layoutManager instanceof GridLayoutManager) {
                 GridLayoutManager gridLayoutManager = (GridLayoutManager) layoutManager;
@@ -313,9 +362,10 @@ public class RrtoyewxRecyclerView extends RecyclerView {
                 gridLayoutManager.setSpanSizeLookup(new GridLayoutManager.SpanSizeLookup() {
                     @Override
                     public int getSpanSize(int position) {
-                        return (wrapperAdapter.isHeader(position)
-                                || wrapperAdapter.isFooter(position)
-                                || wrapperAdapter.isLoadMoreView(position))
+                        return (mWrapperAdapter.isHeader(position)
+                                || mWrapperAdapter.isFooter(position)
+                                || mWrapperAdapter.isLoadMoreView(position))
+                                || mWrapperAdapter.isPullRefreshView(position)
                                 ? spanCount : 1;
                     }
                 });
@@ -327,47 +377,47 @@ public class RrtoyewxRecyclerView extends RecyclerView {
         @Override
         public void onChanged() {
             super.onChanged();
-            int innerAdapterCount = wrapperAdapter.getInnerAdapterCount();
-            if (emptyView != null) {
+            int innerAdapterCount = mWrapperAdapter.getInnerAdapterCount();
+            if (mEmptyView != null) {
 
-                emptyView.setVisibility(innerAdapterCount == 0
+                mEmptyView.setVisibility(innerAdapterCount == 0
                         ? VISIBLE : INVISIBLE);
                 RrtoyewxRecyclerView.this.setVisibility(innerAdapterCount == 0
                         ? INVISIBLE : VISIBLE);
                 RrtoyewxRecyclerView.this.setOverScrollMode(innerAdapterCount == 0
-                        ? OVER_SCROLL_NEVER : overScrollMode);
+                        ? OVER_SCROLL_NEVER : mOverScrollMode);
             }
 
-            if (wrapperAdapter != null) {
-                wrapperAdapter.notifyDataSetChanged();
+            if (mWrapperAdapter != null) {
+                mWrapperAdapter.notifyDataSetChanged();
             }
         }
 
         @Override
         public void onItemRangeInserted(int positionStart, int itemCount) {
             super.onItemRangeInserted(positionStart, itemCount);
-            if (wrapperAdapter != null) {
-                wrapperAdapter.notifyItemRangeChanged(positionStart, itemCount);
+            if (mWrapperAdapter != null) {
+                mWrapperAdapter.notifyItemRangeChanged(positionStart, itemCount);
             }
         }
 
         @Override
         public void onItemRangeChanged(int positionStart, int itemCount) {
-            if (wrapperAdapter != null) {
-                wrapperAdapter.notifyItemRangeChanged(positionStart, itemCount);
+            if (mWrapperAdapter != null) {
+                mWrapperAdapter.notifyItemRangeChanged(positionStart, itemCount);
             }
         }
 
         @Override
         public void onItemRangeRemoved(int positionStart, int itemCount) {
-            if (wrapperAdapter != null) {
-                wrapperAdapter.notifyItemRangeRemoved(positionStart, itemCount);
+            if (mWrapperAdapter != null) {
+                mWrapperAdapter.notifyItemRangeRemoved(positionStart, itemCount);
             }
         }
 
         public void onItemRangeMoved(int fromPosition, int toPosition, int itemCount) {
-            if (wrapperAdapter != null) {
-                wrapperAdapter.notifyItemRangeRemoved(fromPosition, itemCount);
+            if (mWrapperAdapter != null) {
+                mWrapperAdapter.notifyItemRangeRemoved(fromPosition, itemCount);
             }
         }
     }

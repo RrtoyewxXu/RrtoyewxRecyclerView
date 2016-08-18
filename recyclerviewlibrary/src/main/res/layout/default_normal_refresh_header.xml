@@ -29,28 +29,33 @@
             android:scaleType="centerInside"
             android:src="@drawable/header_arrow" />
 
-        <TextView
-            android:id="@+id/refresh_message"
+        <LinearLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginLeft="5dp"
+            android:layout_centerVertical="true"
+            android:layout_marginLeft="10dp"
             android:layout_toRightOf="@+id/refresh_loading"
-            android:gravity="center_vertical"
-            android:text="@string/refresh_pull_refresh"
-            android:textAppearance="?android:attr/textAppearanceMedium"
-            android:textSize="17sp" />
+            android:orientation="vertical">
 
-        <TextView
-            android:id="@+id/refresh_date"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_below="@+id/refresh_message"
-            android:layout_marginLeft="5dp"
-            android:layout_toRightOf="@+id/refresh_loading"
-            android:gravity="center_vertical"
-            android:text="@string/refresh_date"
-            android:textAppearance="?android:attr/textAppearanceMedium"
-            android:textSize="13sp" />
+            <TextView
+                android:id="@+id/refresh_message"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:gravity="center_vertical"
+                android:text="@string/refresh_pull_refresh"
+                android:textAppearance="?android:attr/textAppearanceMedium"
+                android:textSize="17sp" />
+
+            <TextView
+                android:id="@+id/refresh_date"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:gravity="center_vertical"
+                android:text="@string/refresh_date"
+                android:textAppearance="?android:attr/textAppearanceMedium"
+                android:textSize="13sp" />
+
+        </LinearLayout>
 
     </RelativeLayout>
 </RelativeLayout>
