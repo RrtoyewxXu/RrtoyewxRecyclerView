@@ -1,4 +1,21 @@
 <resources>
     <string name="app_name">RrtoyewxRecyclerView</string>
     <string name="title_activity_main2">Main2Activity</string>
+    <string name="title_activity_example">ExampleActivity</string>
+
+    <!--menu-->
+    <string name="action_switch_linear_layout_manager">切换成线性布局</string>
+    <string name="action_switch_grid_layout_manager">切换成网格布局</string>
+    <string name="action_switch_staggered_grid_layout_manager">切换成staggeredGrid布局</string>
+    <string name="action_clear_adapter_data">清空adapter的数据</string>
+    <string name="action_add_adapter_data">增加adapter的数据</string>
+    <string name="action_add_header_view">增加头文件</string>
+    <string name="action_remove_header_view">移除头文件</string>
+    <string name="action_add_footer_view">增加尾文件</string>
+    <string name="action_remove_footer_view">移除尾文件</string>
+    <string name="action_switch_pull_to_refresh_enable">打开/关闭支持pull_to_refresh</string>
+    <string name="action_switch_refresh_header">切换RefreshHeader</string>
+    <string name="action_switch_load_more_enable">打开/关闭支持load_more</string>
+    <string name="action_switch_load_more_view">切换loadMoreView</string>
+    <!--menu-->
 </resources>

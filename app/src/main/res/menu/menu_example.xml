@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:context=".MainActivity">
+
+    <item
+        android:id="@+id/action_switch_linear_layout_manager"
+        android:orderInCategory="1"
+        android:title="@string/action_switch_linear_layout_manager"
+        app:showAsAction="never" />
+
+    <item
+        android:id="@+id/action_switch_grid_layout_manager"
+        android:orderInCategory="2"
+        android:title="@string/action_switch_grid_layout_manager"
+        app:showAsAction="never" />
+
+    <item
+        android:id="@+id/action_switch_staggered_grid_layout_manager"
+        android:orderInCategory="3"
+        android:title="@string/action_switch_staggered_grid_layout_manager"
+        app:showAsAction="never" />
+
+    <item
+        android:id="@+id/action_add_adapter_data"
+        android:orderInCategory="4"
+        android:title="@string/action_add_adapter_data"
+        app:showAsAction="never" />
+
+    <item
+        android:id="@+id/action_clear_adapter_data"
+        android:orderInCategory="5"
+        android:title="@string/action_clear_adapter_data"
+        app:showAsAction="never" />
+
+    <item
+        android:id="@+id/action_add_header_view"
+        android:orderInCategory="6"
+        android:title="@string/action_add_header_view"
+        app:showAsAction="never" />
+
+    <item
+        android:id="@+id/action_remove_header_view"
+        android:orderInCategory="7"
+        android:title="@string/action_remove_header_view"
+        app:showAsAction="never" />
+
+    <item
+        android:id="@+id/action_add_footer_view"
+        android:orderInCategory="8"
+        android:title="@string/action_add_footer_view"
+        app:showAsAction="never" />
+
+    <item
+        android:id="@+id/action_remove_footer_view"
+        android:orderInCategory="9"
+        android:title="@string/action_remove_footer_view"
+        app:showAsAction="never" />
+
+    <item
+        android:id="@+id/action_switch_pull_to_refresh_enable"
+        android:orderInCategory="10"
+        android:title="@string/action_switch_pull_to_refresh_enable"
+        app:showAsAction="never" />
+
+    <item
+        android:id="@+id/action_switch_refresh_header"
+        android:orderInCategory="11"
+        android:title="@string/action_switch_refresh_header"
+        app:showAsAction="never" />
+
+    <item
+        android:id="@+id/action_switch_load_more_enable"
+        android:orderInCategory="12"
+        android:title="@string/action_switch_load_more_enable"
+        app:showAsAction="never" />
+
+    <item
+        android:id="@+id/action_switch_load_more_view"
+        android:orderInCategory="13"
+        android:title="@string/action_switch_load_more_view"
+        app:showAsAction="never" />
+</menu>
