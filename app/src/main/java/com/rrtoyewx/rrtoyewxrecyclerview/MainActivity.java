@@ -11,6 +11,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.rrtoyewx.recyclerviewlibrary.RrtoyewxRecyclerView;
+import com.rrtoyewx.recyclerviewlibrary.refreshheader.ImageRefreshHeader;
 
 public class MainActivity extends AppCompatActivity {
     RrtoyewxRecyclerView recyclerView;
@@ -107,6 +108,10 @@ public class MainActivity extends AppCompatActivity {
 
     public void staggeredgridlayoutmanager(View view) {
         recyclerView.setLayoutManager(staggeredGridLayoutManager);
+    }
+
+    public void switchImageHeader(View view) {
+        recyclerView.setRefreshHeader(new ImageRefreshHeader(this));
     }
 
 

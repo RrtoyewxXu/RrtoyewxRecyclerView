@@ -13,6 +13,9 @@ import com.rrtoyewx.recyclerviewlibrary.refreshheader.ArrowRefreshHeader;
 import com.rrtoyewx.recyclerviewlibrary.refreshheader.BaseRefreshHeader;
 import com.rrtoyewx.recyclerviewlibrary.viewholder.SimpleViewHolder;
 
+import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -87,6 +90,7 @@ public class WrapperAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
     @Override
     public RecyclerView.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         if (viewType == PULL_REFRESH_HEADER_TYPE) {
+            Log.e(TAG, "HEADER");
             return new SimpleViewHolder(refreshHeader.getHeaderView());
         }
 
@@ -184,12 +188,7 @@ public class WrapperAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
     }
 
     public void setPullRefreshHeader(BaseRefreshHeader refreshHeader) {
-        boolean needNotify = !(this.refreshHeader == refreshHeader) && showPullRefreshFlag;
         this.refreshHeader = refreshHeader;
-
-        if (needNotify) {
-            notifyDataSetChanged();
-        }
     }
 
     @Override
@@ -237,4 +236,6 @@ public class WrapperAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
     public int getInnerAdapterCount() {
         return adapter == null ? 0 : adapter.getItemCount();
     }
+
+
 }

@@ -20,6 +20,9 @@ import static com.rrtoyewx.recyclerviewlibrary.refreshheader.BaseRefreshHeader.*
 import com.rrtoyewx.recyclerviewlibrary.refreshheader.ArrowRefreshHeader;
 import com.rrtoyewx.recyclerviewlibrary.refreshheader.BaseRefreshHeader;
 
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
+
 
 /**
  * Created by Rrtoyewx on 16/8/3.
@@ -200,16 +203,21 @@ public class RrtoyewxRecyclerView extends RecyclerView {
         if (mRefreshEnable) {
 
             if (mRefreshHeader == null) {
-                mRefreshHeader = new ArrowRefreshHeader(mContext);
+                BaseRefreshHeader refreshHeader = new ArrowRefreshHeader(mContext);
+                setRefreshHeader(refreshHeader);
             }
-
-            setRefreshHeader(mRefreshHeader);
         }
     }
 
     public void setRefreshHeader(BaseRefreshHeader header) {
-        mRefreshHeader = header;
-        mWrapperAdapter.setPullRefreshHeader(header);
+        boolean needNotify = !(this.mRefreshHeader == header);
+
+        if (needNotify) {
+            mRefreshHeader = header;
+            mWrapperAdapter.setPullRefreshHeader(header);
+
+            super.setAdapter(mWrapperAdapter);
+        }
     }
 
     public void completeRefresh() {
@@ -217,7 +225,6 @@ public class RrtoyewxRecyclerView extends RecyclerView {
             mRefreshHeader.completeRefresh();
         }
     }
-
 
     public void addRefreshListener(RefreshDataListener refreshListener) {
         this.mRefreshDataListener = refreshListener;
@@ -371,6 +378,24 @@ public class RrtoyewxRecyclerView extends RecyclerView {
                 });
             }
         }
+    }
+
+    public void clear() {
+        try {
+            Field recyclerFiled = RecyclerView.class.getDeclaredField("mRecycler");
+            recyclerFiled.setAccessible(true);
+//            Method clearMethod = Class.forName("android.support.v7.widget.RecyclerView$Recycler")
+//                    .getDeclaredMethod("clear");
+//            clearMethod.setAccessible(true);
+            RecyclerView.Recycler recycler = (Recycler) recyclerFiled.get(RrtoyewxRecyclerView.this);
+            recycler.clear();
+//            clearMethod.invoke(recycler);
+            recycler.toString();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        getRecycledViewPool().clear();
     }
 
     private class DataObserver extends RecyclerView.AdapterDataObserver {
