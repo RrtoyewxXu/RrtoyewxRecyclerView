@@ -5,30 +5,30 @@ import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.TextView;
 
 import com.rrtoyewx.recyclerviewlibrary.viewholder.SimpleViewHolder;
 
 /**
  * Created by Rrtoyewx on 16/8/3.
  */
-public class Adapter extends RecyclerView.Adapter {
+public class ExampleAdapter extends RecyclerView.Adapter<ExampleAdapter.ExampleViewHolder> {
     private Context context;
     private int itemCount = 0;
 
-    public Adapter(Context context) {
+    public ExampleAdapter(Context context) {
         this.context = context;
     }
 
-
     @Override
-    public RecyclerView.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+    public ExampleViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         View inflate = LayoutInflater.from(context).inflate(R.layout.item_list, parent, false);
-        return new SimpleViewHolder(inflate);
+        return new ExampleViewHolder(inflate);
     }
 
     @Override
-    public void onBindViewHolder(RecyclerView.ViewHolder holder, int position) {
-
+    public void onBindViewHolder(ExampleViewHolder holder, int position) {
+        holder.contentText.setText(Character.valueOf((char) (position + 'A')).toString());
     }
 
     @Override
@@ -36,8 +36,7 @@ public class Adapter extends RecyclerView.Adapter {
         return itemCount;
     }
 
-
-    public void setItemCount(int itemCount){
+    public void setItemCount(int itemCount) {
         this.itemCount = itemCount;
         notifyDataSetChanged();
     }
@@ -46,6 +45,15 @@ public class Adapter extends RecyclerView.Adapter {
 
         public Holder(View itemView) {
             super(itemView);
+        }
+    }
+
+    public class ExampleViewHolder extends RecyclerView.ViewHolder {
+        public TextView contentText;
+
+        public ExampleViewHolder(View itemView) {
+            super(itemView);
+            contentText = (TextView) itemView.findViewById(R.id.tv_item_example_content);
         }
     }
 }

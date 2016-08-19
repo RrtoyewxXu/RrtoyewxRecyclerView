@@ -77,6 +77,7 @@ public class ArrowRefreshHeader extends BaseRefreshHeader {
 
             if (distance > 0) {
                 mRefreshState = REFRESH_STATE_PULL;
+                firstEnterHeaderPullState();
             }
 
         } else if (mRefreshState == REFRESH_STATE_PULL) {
@@ -97,6 +98,10 @@ public class ArrowRefreshHeader extends BaseRefreshHeader {
         if (distance <= 0) {
             resetRefreshHeader();
         }
+    }
+
+    private void firstEnterHeaderPullState() {
+        flushDateView();
     }
 
     private void enterHeaderPullState() {
@@ -134,6 +139,7 @@ public class ArrowRefreshHeader extends BaseRefreshHeader {
 
         mArrowImage.setVisibility(View.VISIBLE);
         mLoadingBar.setVisibility(View.INVISIBLE);
+        mHintMessageTv.setText(R.string.refresh_pull_refresh);
 
         ViewGroup.LayoutParams layoutParams = mHeaderContainer.getLayoutParams();
         layoutParams.height = 0;
@@ -157,17 +163,23 @@ public class ArrowRefreshHeader extends BaseRefreshHeader {
 
     @Override
     public void completeRefresh() {
-        flushDateView();
+        saveDateTime();
         resetRefreshHeader();
     }
 
+    private void saveDateTime() {
+        preRefreshTime = System.currentTimeMillis();
+    }
+
     private void flushDateView() {
-        long curRefreshTime = System.currentTimeMillis();
         if (preRefreshTime == 0) {
-            preRefreshTime = curRefreshTime;
-            mDateTv.setVisibility(View.VISIBLE);
+            return;
         }
 
+        if (!mDateTv.isShown()) {
+            mDateTv.setVisibility(View.VISIBLE);
+        }
+        long curRefreshTime = System.currentTimeMillis();
         mDateTv.setText(R.string.refresh_date);
 
         String refreshDistanceTime = DateUtil.convertTime(curRefreshTime - preRefreshTime);
@@ -177,6 +189,5 @@ public class ArrowRefreshHeader extends BaseRefreshHeader {
             refreshDistanceTime += "前";
         }
         mDateTv.append(refreshDistanceTime);
-        preRefreshTime = curRefreshTime;
     }
 }

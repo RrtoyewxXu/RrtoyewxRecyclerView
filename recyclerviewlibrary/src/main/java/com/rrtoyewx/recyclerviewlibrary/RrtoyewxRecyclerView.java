@@ -21,7 +21,6 @@ import com.rrtoyewx.recyclerviewlibrary.refreshheader.ArrowRefreshHeader;
 import com.rrtoyewx.recyclerviewlibrary.refreshheader.BaseRefreshHeader;
 
 import java.lang.reflect.Field;
-import java.lang.reflect.Method;
 
 
 /**
@@ -156,6 +155,15 @@ public class RrtoyewxRecyclerView extends RecyclerView {
         mWrapperAdapter.removeFooterView(footerView);
     }
 
+
+    public void removeAllHeaderView() {
+        mWrapperAdapter.removeAllHeaderView();
+    }
+
+    public void removeAllFooterView() {
+        mWrapperAdapter.removeAllFooterView();
+    }
+
     /**
      * setLoadMoreEnable
      *
@@ -168,6 +176,10 @@ public class RrtoyewxRecyclerView extends RecyclerView {
         } else {
             removeOnScrollListener(mOnScrollListener);
         }
+    }
+
+    public boolean checkLoadMoreEnable(){
+        return mLoadMoreEnable;
     }
 
     /**
@@ -196,7 +208,8 @@ public class RrtoyewxRecyclerView extends RecyclerView {
         return mWrapperAdapter.isLoadMore();
     }
 
-    public void setRefreshEnable(boolean mRefreshEnable) {
+
+    public void setPullToRefreshEnable(boolean mRefreshEnable) {
         this.mRefreshEnable = mRefreshEnable;
         mWrapperAdapter.setShowPullRefreshFlag(mRefreshEnable);
 
@@ -204,20 +217,30 @@ public class RrtoyewxRecyclerView extends RecyclerView {
 
             if (mRefreshHeader == null) {
                 BaseRefreshHeader refreshHeader = new ArrowRefreshHeader(mContext);
-                setRefreshHeader(refreshHeader);
+                setPullToRefreshHeader(refreshHeader);
             }
         }
     }
 
-    public void setRefreshHeader(BaseRefreshHeader header) {
+    public boolean checkPullToRefreshEnable() {
+        return mRefreshEnable;
+    }
+
+    public void setPullToRefreshHeader(BaseRefreshHeader header) {
         boolean needNotify = !(this.mRefreshHeader == header);
 
         if (needNotify) {
             mRefreshHeader = header;
             mWrapperAdapter.setPullRefreshHeader(header);
 
-            super.setAdapter(mWrapperAdapter);
+            if (mRefreshEnable) {
+                super.setAdapter(mWrapperAdapter);
+            }
         }
+    }
+
+    public BaseRefreshHeader getPullToRefreshHeader() {
+        return mRefreshHeader;
     }
 
     public void completeRefresh() {
@@ -238,28 +261,29 @@ public class RrtoyewxRecyclerView extends RecyclerView {
 
     @Override
     public boolean onTouchEvent(MotionEvent e) {
+        if (mRefreshEnable) {
+            switch (e.getAction() & MotionEvent.ACTION_MASK) {
+                case MotionEvent.ACTION_DOWN:
+                    mDownMotionEventY = (int) e.getRawY();
+                    break;
 
-        switch (e.getAction() & MotionEvent.ACTION_MASK) {
-            case MotionEvent.ACTION_DOWN:
-                mDownMotionEventY = (int) e.getRawY();
-                break;
+                case MotionEvent.ACTION_MOVE:
+                    mCurMotionEventY = (int) e.getRawY();
 
-            case MotionEvent.ACTION_MOVE:
-                mCurMotionEventY = (int) e.getRawY();
+                    if (checkCanRefresh()) {
+                        Log.d(TAG, "canRefresh");
+                        mRefreshHeader.move((mCurMotionEventY - mDownMotionEventY) / 2, mCurMotionEventY, mDownMotionEventY);
+                    }
 
-                if (checkCanRefresh()) {
-                    Log.d(TAG, "canRefresh");
-                    mRefreshHeader.move((mCurMotionEventY - mDownMotionEventY) / 2, mCurMotionEventY, mDownMotionEventY);
-                }
+                    break;
 
-                break;
-
-            case MotionEvent.ACTION_UP:
-            case MotionEvent.ACTION_CANCEL:
-                if (mRefreshHeader.getRefreshState() != REFRESH_STATE_REFRESHING) {
-                    mRefreshHeader.upOrCancel(mRefreshDataListener);
-                }
-                break;
+                case MotionEvent.ACTION_UP:
+                case MotionEvent.ACTION_CANCEL:
+                    if (mRefreshHeader != null && mRefreshHeader.getRefreshState() != REFRESH_STATE_REFRESHING) {
+                        mRefreshHeader.upOrCancel(mRefreshDataListener);
+                    }
+                    break;
+            }
         }
 
         return super.onTouchEvent(e);
@@ -409,8 +433,9 @@ public class RrtoyewxRecyclerView extends RecyclerView {
                         ? VISIBLE : INVISIBLE);
                 RrtoyewxRecyclerView.this.setVisibility(innerAdapterCount == 0
                         ? INVISIBLE : VISIBLE);
-                RrtoyewxRecyclerView.this.setOverScrollMode(innerAdapterCount == 0
+                RrtoyewxRecyclerView.super.setOverScrollMode(innerAdapterCount == 0
                         ? OVER_SCROLL_NEVER : mOverScrollMode);
+                Log.e(TAG, getOverScrollMode() + "overScrollMode");
             }
 
             if (mWrapperAdapter != null) {

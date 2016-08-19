@@ -19,8 +19,17 @@
 6. 2016.8.19 10:31
     - 完成ImageRefreshHeader;
     - 完成能够切换RefreshHeader;
-
-----
+7. 2016.8.19 11:40
+    - 重构exampleActivity 便于测试
+8. 2016.8.19 12:00 系统测试
+    - mRefreshEnable为false，滑动时崩溃;
+    - 当数据为空的时候setOverScrollMode为OVER_SCROLL_NEVER,后有数据的时候无法切换原来的;
+    - 新增removeAllHeaderView和removeAllFooterView方法;
+    - 新增checkPullToRefreshEnable和getPullToRefreshHeader()方法;
+    - 优化onTouchEvent()在mRefreshEnable为false的时候频繁计算;
+    - 修复refreshHeader的时间显示错误;
+    - 修复打开refreshEnableFlag的adapter的数据不对;
+---
 # 目前支持的功能
 1. 能够addHeaderView和addFooterView
 ```

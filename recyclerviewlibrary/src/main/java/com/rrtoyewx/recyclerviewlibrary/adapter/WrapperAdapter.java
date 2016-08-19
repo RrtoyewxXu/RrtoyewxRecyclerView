@@ -160,6 +160,20 @@ public class WrapperAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
         }
     }
 
+    public void removeAllHeaderView() {
+        if (headerViewList.size() != 0) {
+            headerViewList.clear();
+            notifyDataSetChanged();
+        }
+    }
+
+    public void removeAllFooterView() {
+        if (footerViewList.size() != 0) {
+            footerViewList.clear();
+            notifyDataSetChanged();
+        }
+    }
+
     public void setLoadMoreView(View loadMoreView) {
         this.loadMoreView = loadMoreView;
     }
@@ -230,7 +244,7 @@ public class WrapperAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
     }
 
     private int calculateInnerAdapterPosition(int position) {
-        return adapter == null ? -1 : position - headerViewList.size();
+        return adapter == null ? -1 : position - headerViewList.size() - (showPullRefreshFlag ? 1 : 0);
     }
 
     public int getInnerAdapterCount() {
