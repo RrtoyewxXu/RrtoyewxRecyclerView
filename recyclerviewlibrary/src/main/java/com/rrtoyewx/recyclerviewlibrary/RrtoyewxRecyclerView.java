@@ -165,8 +165,16 @@ public class RrtoyewxRecyclerView extends RecyclerView {
      * @param loadMoreView
      */
     public void setLoadMoreView(View loadMoreView) {
-        this.mLoadMoreView = loadMoreView;
-        mWrapperAdapter.setLoadMoreView(loadMoreView);
+        boolean needNotify = !(loadMoreView == this.mLoadMoreView);
+
+        if (needNotify) {
+            this.mLoadMoreView = loadMoreView;
+            mWrapperAdapter.setLoadMoreView(loadMoreView);
+
+            if (mLoadMoreEnable) {
+                super.setAdapter(mWrapperAdapter);
+            }
+        }
     }
 
     public void showLoadMoreView() {
@@ -429,7 +437,7 @@ public class RrtoyewxRecyclerView extends RecyclerView {
                         ? INVISIBLE : VISIBLE);
                 RrtoyewxRecyclerView.super.setOverScrollMode(innerAdapterCount == 0
                         ? OVER_SCROLL_NEVER : mOverScrollMode);
-                Log.e(TAG, getOverScrollMode() + "overScrollMode");
+                Log.d(TAG, getOverScrollMode() + "overScrollMode");
             }
 
             if (mWrapperAdapter != null) {

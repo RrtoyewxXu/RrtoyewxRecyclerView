@@ -32,6 +32,7 @@
     - 增加checkIsPullRefresh的方法检查是否正在下拉刷新;
     - 解决数据较少的下拉刷新和加载更多冲突的bug;
     - 数据充满整个屏幕的时候，加载更多需要第二次上滑才能显示出来;
+    - 修复setLoadMoreView必须在setLoadMoreEnable后调用的bug;
 ---
 # 目前支持的功能
 1. 能够addHeaderView和addFooterView

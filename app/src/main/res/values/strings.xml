@@ -17,5 +17,6 @@
     <string name="action_switch_refresh_header">切换RefreshHeader</string>
     <string name="action_switch_load_more_enable">打开/关闭支持load_more</string>
     <string name="action_switch_load_more_view">切换loadMoreView</string>
+    <string name="customer_load_more_view">这是自定义的loadMoreView</string>
     <!--menu-->
 </resources>

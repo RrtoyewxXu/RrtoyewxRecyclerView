@@ -163,6 +163,8 @@ public class ExampleActivity extends AppCompatActivity {
                         break;
 
                     case R.id.action_switch_load_more_view:
+                        View customerLoadMoreView = LayoutInflater.from(ExampleActivity.this).inflate(R.layout.item_customer_load_more, null);
+                        mRecyclerView.setLoadMoreView(customerLoadMoreView);
                         break;
 
                 }
