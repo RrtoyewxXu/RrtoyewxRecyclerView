@@ -33,62 +33,117 @@
     - 解决数据较少的下拉刷新和加载更多冲突的bug;
     - 数据充满整个屏幕的时候，加载更多需要第二次上滑才能显示出来;
     - 修复setLoadMoreView必须在setLoadMoreEnable后调用的bug;
+9.2016.8.21 17:50 第一次系统的测试结束
 ---
-# 目前支持的功能
-1. 能够addHeaderView和addFooterView
+# 支持的功能
+1. setEmptyView：自动根据Adapter的item的个数显示空白页;
 ```
-
-    recyclerView.addHeader(View headerView);
-    recyclerView.addFooter(View footerView);
-```
-
-
-效果图：
-![addHeaderView和addFooterView](images/addHeaderView_addFooterView.gif)
-
----
-2. 能够setEmpty()
-```
-
-    recyclerView.setEmpty(View emptyView);
-```
-
-效果图：
-
-![setEmpty(View emptyView)](images/set_empty_view.gif)
-------------------------------------------------------
-3. 能够显示加载更多
-```
-    //设置自定义的loadMoreView,可以不设置
-    recyclerView.setLoadMoreView(View loadMoreView);
     
-   // 开启能够加载更多，必填 默认是false
-   recyclerView.setLoadMoreEnable(boolean loadMoreEnable);
-   
-   //加载更多完成
-   completeLoadMore();
-   
-   //增加加载更多的监听，主要是在回调方法去请求数据等操作，
-   addRefreshListener(RefreshListener listener);
+    //设置空白的EmptyView
+    public void setEmptyView(View emptyView) {...} 
 ```
-
-
 效果图：
-![加载更多](images/load_more.gif)
-
-------------------------------------------------------
-4. 能够加载更多
-
-```
-
-  //设置下拉刷新功能开启
-  recyclerView.setRefreshEnable(true);
-  //设置加载的头布局(默认是ArrowRefreshHeader 带箭头的下拉刷新) 所以可以不设置
-  recyclerView.setRefreshHeader(BaseRefreshHeader);
+![setEmptyView的效果图](images/setEmptyView.gif)
   
-```
-  
-  
+2. headerView的操作：addHeaderView,removeHeaderView,removeAllHeaderView;
+    ```
+    //addHeaderView
+    public void addHeaderView(View headerView) {...}
+    
+   //removeHeaderView
+    public void removeHeaderView(View headerView) {...}
+    
+    //removeAllHeaderView
+    public void removeAllHeaderView() {...}
+    ```
+效果图：
+![headerView的操作](images/HeaderView.gif)
 
---------
-  
+3. footerView的操作：addFooterView,removeFooterView,removeAllFooterView;
+    ```
+    //addFooterView
+    public void addFooterView(View footerView) {...}
+    
+   //removeFooterView
+    public void removeFooterView(View footerView) {...}
+    
+    //removeAllFooterView
+    public void removeAllFooterView() {...}
+    ```
+效果图：
+![footerView的操作](images/FooterView.gif)
+
+4. 下拉刷新：setPullToRefreshEnable, setPullToRefreshHeader
+    ```
+    //setPullToRefreshEnable:默认是关闭状态
+     public void setPullToRefreshEnable(boolean mRefreshEnable) {...}
+     
+     //setPullToRefreshHeader：实现imageRefreshHeader和ArrowRefreshHeader，默认是ArrowRefreshHeader
+     //自定义RefreshHeaderView的需实现BaseRefreshHeader即可
+     public void setPullToRefreshHeader(BaseRefreshHeader header){...}
+    ```
+效果图：
+![下拉刷新](PullToRefreshHeader.gif)
+
+5. 加载更多：setLoadMoreView,setLoadMoreEnable
+   ```
+    // setLoadMoreEnable:默认是关闭
+    public void setLoadMoreEnable(boolean loadMoreEnable) {...}
+   
+   //setLoadMoreView
+   public void setLoadMoreView(View loadMoreView) {...}
+   ```
+效果图：
+![加载更多](LoadMoreView.gif)
+
+6. 设置加载更多和下拉刷新的监听 addRefreshListener
+    ```
+    //addRefreshListener
+    public void addRefreshListener(RefreshDataListener refreshListener) {...}
+    
+    //RefreshDataListener
+    public interface RefreshDataListener {
+            void onRefresh();
+    
+            void onLoadMore();
+     }
+     
+    ```
+    
+使用例子
+   ```
+    mRecyclerView.addRefreshListener(new RrtoyewxRecyclerView.RefreshDataListener() {
+               @Override
+               public void onRefresh() {
+                   mRecyclerView.postDelayed(new Runnable() {
+                       @Override
+                       public void run() {
+                           mRecyclerView.completeRefresh();
+                           Toast.makeText(ExampleActivity.this, "下来刷新加载完成", Toast.LENGTH_SHORT).show();
+                       }
+                   }, 2000);
+               }
+   
+               @Override
+               public void onLoadMore() {
+                   mRecyclerView.postDelayed(new Runnable() {
+                       @Override
+                       public void run() {
+                           mRecyclerView.completeLoadMore();
+                           Toast.makeText(ExampleActivity.this, "加载完成", Toast.LENGTH_SHORT).show();
+                       }
+                   }, 2000);
+               }
+           });
+   ```
+   
+7. 完成下拉刷新和加载更多
+   ```
+   //completeLoadMore
+   public void completeLoadMore() {}
+   
+   //completeRefresh
+   public void completeRefresh() {...}
+           
+   ```
+   
