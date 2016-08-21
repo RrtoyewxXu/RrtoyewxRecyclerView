@@ -29,6 +29,9 @@
     - 优化onTouchEvent()在mRefreshEnable为false的时候频繁计算;
     - 修复refreshHeader的时间显示错误;
     - 修复打开refreshEnableFlag的adapter的数据不对;
+    - 增加checkIsPullRefresh的方法检查是否正在下拉刷新;
+    - 解决数据较少的下拉刷新和加载更多冲突的bug;
+    - 数据充满整个屏幕的时候，加载更多需要第二次上滑才能显示出来;
 ---
 # 目前支持的功能
 1. 能够addHeaderView和addFooterView

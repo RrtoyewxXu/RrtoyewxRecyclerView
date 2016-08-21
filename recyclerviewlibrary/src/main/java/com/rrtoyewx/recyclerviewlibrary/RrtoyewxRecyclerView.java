@@ -33,6 +33,8 @@ public class RrtoyewxRecyclerView extends RecyclerView {
     private Context mContext;
     private WrapperAdapter mWrapperAdapter;
 
+    private boolean mIsUpFlag;
+
     private BaseRefreshHeader mRefreshHeader;
     private boolean mRefreshEnable;
 
@@ -47,7 +49,6 @@ public class RrtoyewxRecyclerView extends RecyclerView {
     private int mDownMotionEventY;
     private int mCurMotionEventY;
 
-    private OnScrollListener mOnScrollListener;
     private RefreshDataListener mRefreshDataListener;
 
     public interface RefreshDataListener {
@@ -76,24 +77,6 @@ public class RrtoyewxRecyclerView extends RecyclerView {
 
         mWrapperAdapter = new WrapperAdapter(context);
         setAdapter(new NoItemAdapter(context));
-
-        mOnScrollListener = new OnScrollListener() {
-            @Override
-            public void onScrollStateChanged(RecyclerView recyclerView, int newState) {
-                if (newState == SCROLL_STATE_DRAGGING) {
-                    if (checkCanLoadMore()) {
-                        showLoadMoreView();
-                    }
-                }
-                super.onScrollStateChanged(recyclerView, newState);
-            }
-
-            @Override
-            public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
-                super.onScrolled(recyclerView, dx, dy);
-            }
-        };
-
     }
 
     @Override
@@ -104,7 +87,6 @@ public class RrtoyewxRecyclerView extends RecyclerView {
 
         mDataObserver.onChanged();
     }
-
 
     /**
      * setEmptyView
@@ -171,14 +153,9 @@ public class RrtoyewxRecyclerView extends RecyclerView {
      */
     public void setLoadMoreEnable(boolean loadMoreEnable) {
         this.mLoadMoreEnable = loadMoreEnable;
-        if (loadMoreEnable) {
-            addOnScrollListener(mOnScrollListener);
-        } else {
-            removeOnScrollListener(mOnScrollListener);
-        }
     }
 
-    public boolean checkLoadMoreEnable(){
+    public boolean checkLoadMoreEnable() {
         return mLoadMoreEnable;
     }
 
@@ -206,6 +183,12 @@ public class RrtoyewxRecyclerView extends RecyclerView {
 
     public boolean checkIsLoadMore() {
         return mWrapperAdapter.isLoadMore();
+    }
+
+    public boolean checkIsPullToRefresh() {
+        return mRefreshEnable
+                && mRefreshHeader != null
+                && mRefreshHeader.getRefreshState() != REFRESH_STATE_IDLE;
     }
 
 
@@ -261,7 +244,7 @@ public class RrtoyewxRecyclerView extends RecyclerView {
 
     @Override
     public boolean onTouchEvent(MotionEvent e) {
-        if (mRefreshEnable) {
+        if (mRefreshEnable || mLoadMoreEnable) {
             switch (e.getAction() & MotionEvent.ACTION_MASK) {
                 case MotionEvent.ACTION_DOWN:
                     mDownMotionEventY = (int) e.getRawY();
@@ -270,7 +253,16 @@ public class RrtoyewxRecyclerView extends RecyclerView {
                 case MotionEvent.ACTION_MOVE:
                     mCurMotionEventY = (int) e.getRawY();
 
-                    if (checkCanRefresh()) {
+                    if (mLoadMoreEnable && mCurMotionEventY - mDownMotionEventY < -20) {
+                        mIsUpFlag = true;
+                    }
+
+                    if (mLoadMoreEnable && checkCanLoadMore()) {
+                        Log.e(TAG, "checkLoadMore");
+                        showLoadMoreView();
+                    }
+
+                    if (mRefreshEnable && checkCanRefresh()) {
                         Log.d(TAG, "canRefresh");
                         mRefreshHeader.move((mCurMotionEventY - mDownMotionEventY) / 2, mCurMotionEventY, mDownMotionEventY);
                     }
@@ -282,9 +274,12 @@ public class RrtoyewxRecyclerView extends RecyclerView {
                     if (mRefreshHeader != null && mRefreshHeader.getRefreshState() != REFRESH_STATE_REFRESHING) {
                         mRefreshHeader.upOrCancel(mRefreshDataListener);
                     }
+
+                    mIsUpFlag = false;
                     break;
             }
         }
+
 
         return super.onTouchEvent(e);
     }
@@ -297,8 +292,7 @@ public class RrtoyewxRecyclerView extends RecyclerView {
 
             int firstVisiblePosition = calculateFirstVisiblePosition(layoutManager);
             Log.d(TAG, "firstVisiblePosition" + firstVisiblePosition);
-            if (mRefreshEnable
-                    && !checkIsLoadMore()
+            if (!checkIsLoadMore()
                     && firstVisiblePosition == (mRefreshHeader.getVisibleHeaderHeight() == 0 ? 1 : 0)
                     && mRefreshHeader.getRefreshState() != REFRESH_STATE_REFRESHING) {
 
@@ -316,12 +310,12 @@ public class RrtoyewxRecyclerView extends RecyclerView {
         if (adapter != null && layoutManager != null) {
 
             int lastVisiblePosition = calculateLastVisiblePosition(layoutManager);
-
-            if (lastVisiblePosition != -1
+            Log.d(TAG, "lastVisiblePosition" + lastVisiblePosition);
+            if (mIsUpFlag
+                    && lastVisiblePosition == adapter.getItemCount() - 1
                     && adapter.getInnerAdapterCount() != 0
-                    && (lastVisiblePosition == adapter.getItemCount() - 1)
                     && !checkIsLoadMore()
-                    && mRefreshHeader.getRefreshState() == REFRESH_STATE_IDLE) {
+                    && !checkIsPullToRefresh()) {
 
                 return true;
             }
