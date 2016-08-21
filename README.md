@@ -83,7 +83,7 @@
      public void setPullToRefreshHeader(BaseRefreshHeader header){...}
     ```
 效果图：
-![下拉刷新](PullToRefreshHeader.gif)
+![下拉刷新](images/PullToRefreshHeader.gif)
 
 5. 加载更多：setLoadMoreView,setLoadMoreEnable
    ```
@@ -94,7 +94,7 @@
    public void setLoadMoreView(View loadMoreView) {...}
    ```
 效果图：
-![加载更多](LoadMoreView.gif)
+![加载更多](images/LoadMoreView.gif)
 
 6. 设置加载更多和下拉刷新的监听 addRefreshListener
     ```
