@@ -1,7 +1,6 @@
 package com.rrtoyewx.recyclerviewlibrary;
 
 import android.content.Context;
-import android.support.annotation.CheckResult;
 import android.support.annotation.Nullable;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.LinearLayoutManager;
@@ -14,13 +13,13 @@ import android.view.View;
 
 import com.rrtoyewx.recyclerviewlibrary.adapter.NoItemAdapter;
 import com.rrtoyewx.recyclerviewlibrary.adapter.WrapperAdapter;
-
-import static com.rrtoyewx.recyclerviewlibrary.refreshheader.BaseRefreshHeader.*;
-
 import com.rrtoyewx.recyclerviewlibrary.refreshheader.ArrowRefreshHeader;
 import com.rrtoyewx.recyclerviewlibrary.refreshheader.BaseRefreshHeader;
 
 import java.lang.reflect.Field;
+
+import static com.rrtoyewx.recyclerviewlibrary.refreshheader.BaseRefreshHeader.REFRESH_STATE_IDLE;
+import static com.rrtoyewx.recyclerviewlibrary.refreshheader.BaseRefreshHeader.REFRESH_STATE_REFRESHING;
 
 
 /**
@@ -88,51 +87,31 @@ public class RrtoyewxRecyclerView extends RecyclerView {
         mDataObserver.onChanged();
     }
 
-    /**
-     * setEmptyView
-     *
-     * @param emptyView
-     */
+
     public void setEmptyView(View emptyView) {
         this.mEmptyView = emptyView;
 
         mDataObserver.onChanged();
     }
 
-    /**
-     * addHeaderView
-     *
-     * @param headerView
-     */
+
     public void addHeaderView(View headerView) {
         mWrapperAdapter.addHeaderView(headerView);
         smoothScrollToPosition(0);
     }
 
-    /**
-     * addFooterView
-     *
-     * @param footerView
-     */
+
     public void addFooterView(View footerView) {
         mWrapperAdapter.addFooterView(footerView);
         smoothScrollToPosition(mWrapperAdapter.getItemCount() - 1);
     }
 
-    /**
-     * remove headerView
-     *
-     * @param headerView
-     */
+
     public void removeHeaderView(View headerView) {
         mWrapperAdapter.removeHeaderView(headerView);
     }
 
-    /**
-     * remove footerView
-     *
-     * @param footerView
-     */
+
     public void removeFooterView(View footerView) {
         mWrapperAdapter.removeFooterView(footerView);
     }
@@ -146,11 +125,7 @@ public class RrtoyewxRecyclerView extends RecyclerView {
         mWrapperAdapter.removeAllFooterView();
     }
 
-    /**
-     * setLoadMoreEnable
-     *
-     * @param loadMoreEnable
-     */
+
     public void setLoadMoreEnable(boolean loadMoreEnable) {
         this.mLoadMoreEnable = loadMoreEnable;
     }
@@ -159,11 +134,7 @@ public class RrtoyewxRecyclerView extends RecyclerView {
         return mLoadMoreEnable;
     }
 
-    /**
-     * setLoadMoreView
-     *
-     * @param loadMoreView
-     */
+
     public void setLoadMoreView(View loadMoreView) {
         boolean needNotify = !(loadMoreView == this.mLoadMoreView);
 
@@ -292,7 +263,7 @@ public class RrtoyewxRecyclerView extends RecyclerView {
         return super.onTouchEvent(e);
     }
 
-    @CheckResult
+
     private boolean checkCanRefresh() {
         LayoutManager layoutManager = getLayoutManager();
         Adapter adapter = getAdapter();
@@ -311,7 +282,7 @@ public class RrtoyewxRecyclerView extends RecyclerView {
         return false;
     }
 
-    @CheckResult
+
     private boolean checkCanLoadMore() {
         LayoutManager layoutManager = getLayoutManager();
         WrapperAdapter adapter = (WrapperAdapter) getAdapter();
@@ -332,7 +303,7 @@ public class RrtoyewxRecyclerView extends RecyclerView {
         return false;
     }
 
-    @CheckResult
+
     private int calculateLastVisiblePosition(LayoutManager layoutManager) {
 
         if (layoutManager instanceof LinearLayoutManager) {
@@ -378,13 +349,13 @@ public class RrtoyewxRecyclerView extends RecyclerView {
         return -1;
     }
 
-    @Override
+
     public void setOverScrollMode(int overScrollMode) {
         super.setOverScrollMode(overScrollMode);
         this.mOverScrollMode = overScrollMode;
     }
 
-    @Override
+
     public void setLayoutManager(LayoutManager layoutManager) {
         super.setLayoutManager(layoutManager);
         if (mWrapperAdapter != null) {

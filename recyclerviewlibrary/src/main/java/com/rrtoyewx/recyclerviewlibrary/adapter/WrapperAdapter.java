@@ -1,7 +1,6 @@
 package com.rrtoyewx.recyclerviewlibrary.adapter;
 
 import android.content.Context;
-import android.support.annotation.CheckResult;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.StaggeredGridLayoutManager;
 import android.util.Log;
@@ -217,24 +216,22 @@ public class WrapperAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder
         super.onViewAttachedToWindow(holder);
     }
 
-    @CheckResult
+
     public boolean isPullRefreshView(int position) {
         return showPullRefreshFlag && position == 0;
     }
 
-    @CheckResult
     public boolean isHeader(int position) {
         return (showPullRefreshFlag ? position - 1 : position) < headerViewList.size() && !isPullRefreshView(position);
     }
 
-    @CheckResult
+
     public boolean isFooter(int position) {
         return adapter != null &&
                 ((position >= headerViewList.size() + adapter.getItemCount() + (showPullRefreshFlag ? 1 : 0))
                         && !isLoadMoreView(position));
     }
 
-    @CheckResult
     public boolean isLoadMoreView(int position) {
         return showLoadMoreViewFlag && position == getItemCount() - 1;
     }
