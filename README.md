@@ -33,7 +33,8 @@
     - 解决数据较少的下拉刷新和加载更多冲突的bug;
     - 数据充满整个屏幕的时候，加载更多需要第二次上滑才能显示出来;
     - 修复setLoadMoreView必须在setLoadMoreEnable后调用的bug;
-9.2016.8.21 17:50 第一次系统的测试结束
+9. 2016.8.21 17:50 第一次系统的测试结束
+
 ---
 # 支持的功能
 1. setEmptyView：自动根据Adapter的item的个数显示空白页;
@@ -83,7 +84,7 @@
      public void setPullToRefreshHeader(BaseRefreshHeader header){...}
     ```
 效果图：
-![下拉刷新](PullToRefreshHeader.gif)
+![下拉刷新](images/PullToRefreshHeader.gif)
 
 5. 加载更多：setLoadMoreView,setLoadMoreEnable
    ```
@@ -94,7 +95,7 @@
    public void setLoadMoreView(View loadMoreView) {...}
    ```
 效果图：
-![加载更多](LoadMoreView.gif)
+![加载更多](images/LoadMoreView.gif)
 
 6. 设置加载更多和下拉刷新的监听 addRefreshListener
     ```
