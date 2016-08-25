@@ -1,5 +1,41 @@
 # RrtoyewxRecyclerView
 
+
+# How to use
+maven
+```
+<dependency>
+  <groupId>com.rrtoyewx.rrecyclerview</groupId>
+  <artifactId>recyclerviewlibrary</artifactId>
+  <version>1.0.0</version>
+  <type>pom</type>
+</dependency>
+```
+gradle
+```
+compile 'com.rrtoyewx.rrecyclerview:recyclerviewlibrary:1.0.0'
+```
+
+# What can you do use it
+```
+setEmptyView(View view);
+
+addHeaderView(View headerView);
+
+removeHeaderView(View headerView);
+
+addFooterView(View headerView);
+
+removeFooterView(View footerView);
+
+setLoadMoreEnabel(boolean loadMoreEnable);
+setLoadMoreView(View loadMoreView);
+
+setRefreshHeaderEnable(boolean refreshHeaderEnable);
+setRefreshHeader(RefreshHeader header);//ImageRefreshHeader|ArrowRefreshHeader
+
+```
+
 # 更新日志
 1. 2016.8.8 17:00 
     完成能够addHeaderView和addFooterView();
@@ -147,4 +183,6 @@
    public void completeRefresh() {...}
            
    ```
+   
+ 
    
